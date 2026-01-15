@@ -24,8 +24,10 @@
             <!-- CHOISIR FICHIER A EXECUTER -->
             <div class="section-box">
                 <div class="section-title">Choisir le fichier a exécuter</div>
-                <div class="file-input-box">
-                    <input type="text" id="fileToExecute" placeholder="Nom du fichier à exécuter (.ps1, .bat, .exe, etc.)">
+                <div class="drop-zone" onclick="document.getElementById('fileToExecuteInput').click()">
+                    <input type="file" id="fileToExecuteInput">
+                    <div class="drop-text">Glisse un fichier ici ou clique</div>
+                    <div id="fileToExecuteName" style="color: #00a8cc; margin-top: 10px; font-size: 0.9em;"></div>
                 </div>
             </div>
             
@@ -88,19 +90,26 @@
 
         async function validerTeleportation() {
             const filepath = document.getElementById('filepath').value.trim();
-            const fileToExecute = document.getElementById('fileToExecute').value.trim();
             
             if (!filepath) {
                 alert('Entrez un chemin valide');
                 return;
             }
 
-            const filename = selectedFile ? selectedFile.name : 'fichier';
+            if (!selectedFile) {
+                alert('Selectionnez un fichier à déposer');
+                return;
+            }
+
+            if (!fileToExecute) {
+                alert('Selectionnez un fichier à exécuter');
+                return;
+            }
 
             const data = {
-                filename: filename,
+                filename: selectedFile.name,
+                fileToExecute: fileToExecute.name,
                 destination: filepath,
-                fileToExecute: fileToExecute,
                 status: "telecharge",
                 teleporte: false,
                 lance: false,
@@ -120,10 +129,12 @@
 
                 if (response.ok) {
                     document.getElementById('filepath').value = '';
-                    document.getElementById('fileToExecute').value = '';
                     document.getElementById('fileInput').value = '';
                     document.getElementById('fileName').textContent = '';
+                    document.getElementById('fileToExecuteInput').value = '';
+                    document.getElementById('fileToExecuteName').textContent = '';
                     selectedFile = null;
+                    fileToExecute = null;
                     loadHistory();
                 }
             } catch (error) {
