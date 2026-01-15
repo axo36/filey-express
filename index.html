@@ -23,65 +23,52 @@
             text-align: center;
             max-width: 400px;
         }
-        h1 { 
-            color: #333; 
-            margin-bottom: 30px;
-            font-size: 1.8em;
-        }
-        .toggle-switch {
-            position: relative;
-            width: 120px;
-            height: 60px;
-            margin: 0 auto 30px;
-            cursor: pointer;
-        }
-        .toggle-switch input {
-            display: none;
-        }
-        .toggle-slider {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            border-radius: 34px;
-            transition: 0.3s;
-            border: 2px solid #999;
-        }
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 50px;
-            width: 50px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            border-radius: 50%;
-            transition: 0.3s;
-        }
-        input:checked + .toggle-slider {
-            background-color: #10b981;
-            border-color: #10b981;
-        }
-        input:checked + .toggle-slider:before {
-            transform: translateX(60px);
-        }
+        h1 { color: #333; margin-bottom: 30px; }
         
-        .status {
-            font-size: 1.5em;
+        .status-display {
+            font-size: 3em;
             font-weight: bold;
-            margin-bottom: 20px;
-            height: 40px;
+            margin: 30px 0;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .status.on {
+        .status-display.on {
             color: #10b981;
         }
-        .status.off {
+        .status-display.off {
             color: #ef4444;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-on {
+            background: #10b981;
+            color: white;
+        }
+        .btn-on:hover { background: #059669; }
+        .btn-off {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-off:hover { background: #dc2626; }
+        .btn:disabled {
+            background: #999;
+            cursor: not-allowed;
         }
         
         .info {
@@ -93,102 +80,50 @@
             margin-top: 20px;
         }
         
-        .history {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #eee;
-        }
-        .history h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-        .history-item {
-            background: #f5f5f5;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #666;
+        .last-update {
+            color: #999;
+            font-size: 0.85em;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔘 Bouton ON/OFF</h1>
+        <h1>🔘 Contrôle ON/OFF</h1>
         
-        <label class="toggle-switch">
-            <input type="checkbox" id="toggleBtn">
-            <span class="toggle-slider"></span>
-        </label>
+        <div class="status-display off" id="statusDisplay">
+            🔴 OFF
+        </div>
         
-        <div class="status" id="status">
-            <span>🔴 OFF</span>
+        <div class="button-group">
+            <button class="btn btn-on" onclick="sendStatus('on')">🟢 Passer en ON</button>
+            <button class="btn btn-off" onclick="sendStatus('off')">🔴 Passer en OFF</button>
         </div>
         
         <div class="info">
-            ✅ Le statut s'enregistre automatiquement<br>
-            ✅ Si tu rafraîchis la page, ça reste pareil<br>
-            ✅ Tout le monde voit le même statut
+            ✅ Le site se met à jour automatiquement<br>
+            ✅ Quand le code local envoie ON ou OFF<br>
+            ✅ Toutes les 2 secondes
         </div>
         
-        <div class="history">
-            <h3>📝 Historique</h3>
-            <div id="historyList"></div>
-        </div>
+        <div class="last-update" id="lastUpdate">En attente...</div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
         const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
         
-        const STATUS_API = `${SUPABASE_URL}/rest/v1/button_status`;
-        const HISTORY_API = `${SUPABASE_URL}/rest/v1/button_history?order=id.desc`;
-        
-        const toggleBtn = document.getElementById('toggleBtn');
-        const statusDiv = document.getElementById('status');
+        const API_URL = `${SUPABASE_URL}/rest/v1/status`;
 
-        // Charger le statut au démarrage
-        async function loadStatus() {
-            try {
-                const response = await fetch(STATUS_API + '?order=id.desc&limit=1', {
-                    headers: {
-                        "Authorization": `Bearer ${SUPABASE_KEY}`,
-                        "apikey": SUPABASE_KEY
-                    }
-                });
-
-                const data = await response.json();
-                if (data.length > 0) {
-                    const status = data[0].is_on;
-                    toggleBtn.checked = status;
-                    updateStatusDisplay(status);
-                    console.log("✅ Statut chargé:", status);
-                } else {
-                    console.log("Aucun statut trouvé");
-                }
-            } catch (error) {
-                console.error('Erreur chargement:', error);
-            }
-        }
-
-        // Quand on clique sur le bouton
-        toggleBtn.addEventListener('change', async function() {
-            const newStatus = this.checked;
-            updateStatusDisplay(newStatus);
-            await saveStatus(newStatus);
-            loadHistory();
-        });
-
-        // Sauvegarder le statut dans Supabase
-        async function saveStatus(isOn) {
+        // Envoyer le statut
+        async function sendStatus(state) {
             try {
                 const data = {
-                    is_on: isOn,
+                    state: state,
                     timestamp: new Date().toISOString()
                 };
 
-                const response = await fetch(STATUS_API, {
+                const response = await fetch(API_URL, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -199,78 +134,53 @@
                 });
 
                 if (response.ok) {
-                    console.log("✅ Statut enregistré!");
-                    
-                    // Ajouter à l'historique
-                    const historyData = {
-                        action: isOn ? "ON" : "OFF",
-                        timestamp: new Date().toISOString()
-                    };
-
-                    await fetch(HISTORY_API, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${SUPABASE_KEY}`,
-                            "apikey": SUPABASE_KEY
-                        },
-                        body: JSON.stringify(historyData)
-                    });
+                    console.log("✅ Envoyé:", state);
+                    loadStatus();
                 } else {
-                    console.error('Erreur:', response.status);
+                    console.error("❌ Erreur:", response.status);
                 }
             } catch (error) {
-                console.error('Erreur sauvegarde:', error);
+                console.error("❌ Erreur:", error);
             }
         }
 
-        // Afficher le statut
-        function updateStatusDisplay(isOn) {
-            if (isOn) {
-                statusDiv.innerHTML = '<span>🟢 ON</span>';
-                statusDiv.className = 'status on';
-            } else {
-                statusDiv.innerHTML = '<span>🔴 OFF</span>';
-                statusDiv.className = 'status off';
-            }
-        }
-
-        // Charger l'historique
-        async function loadHistory() {
+        // Charger le dernier statut
+        async function loadStatus() {
             try {
-                const response = await fetch(HISTORY_API + '&limit=10', {
+                const response = await fetch(API_URL + '?order=id.desc&limit=1', {
                     headers: {
                         "Authorization": `Bearer ${SUPABASE_KEY}`,
                         "apikey": SUPABASE_KEY
                     }
                 });
 
-                const history = await response.json();
-                displayHistory(history);
+                const data = await response.json();
+                if (data.length > 0) {
+                    const state = data[0].state;
+                    const timestamp = new Date(data[0].timestamp);
+                    
+                    const display = document.getElementById('statusDisplay');
+                    if (state === 'on') {
+                        display.textContent = '🟢 ON';
+                        display.className = 'status-display on';
+                    } else {
+                        display.textContent = '🔴 OFF';
+                        display.className = 'status-display off';
+                    }
+                    
+                    document.getElementById('lastUpdate').textContent = 
+                        'Dernier update: ' + timestamp.toLocaleString('fr-FR');
+                    
+                    console.log("📥 Statut chargé:", state);
+                }
             } catch (error) {
-                console.error('Erreur historique:', error);
+                console.error("❌ Erreur chargement:", error);
             }
         }
 
-        function displayHistory(history) {
-            const list = document.getElementById('historyList');
-            
-            if (!history || history.length === 0) {
-                list.innerHTML = '<div class="history-item">Aucun changement</div>';
-                return;
-            }
-
-            list.innerHTML = history.map(h => `
-                <div class="history-item">
-                    ${h.action === 'ON' ? '🟢' : '🔴'} <strong>${h.action}</strong> - ${new Date(h.timestamp).toLocaleString('fr-FR')}
-                </div>
-            `).join('');
-        }
-
-        // Au démarrage
+        // Charger au démarrage et toutes les 2 secondes
         loadStatus();
-        loadHistory();
-        setInterval(loadHistory, 3000);
+        setInterval(loadStatus, 2000);
     </script>
 </body>
 </html>
