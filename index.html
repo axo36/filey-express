@@ -151,7 +151,7 @@
         // Charger le statut au démarrage
         async function loadStatus() {
             try {
-                const response = await fetch(STATUS_API + '?limit=1', {
+                const response = await fetch(STATUS_API + '?order=id.desc&limit=1', {
                     headers: {
                         "Authorization": `Bearer ${SUPABASE_KEY}`,
                         "apikey": SUPABASE_KEY
@@ -163,6 +163,9 @@
                     const status = data[0].is_on;
                     toggleBtn.checked = status;
                     updateStatusDisplay(status);
+                    console.log("✅ Statut chargé:", status);
+                } else {
+                    console.log("Aucun statut trouvé");
                 }
             } catch (error) {
                 console.error('Erreur chargement:', error);
