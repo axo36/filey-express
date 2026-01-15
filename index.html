@@ -3,184 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telecharger Fichier</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        h1 { color: #333; text-align: center; margin-bottom: 30px; }
-        
-        .section { 
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .section h2 { color: #667eea; margin-bottom: 15px; }
-        
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 1em;
-            box-sizing: border-box;
-        }
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .btn {
-            flex: 1;
-            padding: 12px;
-            font-size: 1em;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-download {
-            background: #10b981;
-            color: white;
-        }
-        .btn-download:hover { background: #059669; }
-        .btn-clear {
-            background: #999;
-            color: white;
-        }
-        .btn-clear:hover { background: #777; }
-        
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-            font-weight: bold;
-        }
-        .message.success {
-            background: #d4edda;
-            color: #10b981;
-            border: 2px solid #10b981;
-            display: block;
-        }
-        .message.error {
-            background: #f8d7da;
-            color: #dc3545;
-            border: 2px solid #dc3545;
-            display: block;
-        }
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 2px solid #0c5460;
-            display: block;
-        }
-        
-        .history {
-            margin-top: 30px;
-        }
-        .history h2 { color: #667eea; margin-bottom: 15px; }
-        .history-item {
-            background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-        }
-        .history-item.success {
-            border-left-color: #10b981;
-            background: #f0fdf4;
-        }
-        .history-item.error {
-            border-left-color: #dc3545;
-            background: #fef2f2;
-        }
-        .history-filename { font-weight: bold; color: #333; }
-        .history-destination { color: #666; font-size: 0.9em; }
-        .history-status { color: #999; font-size: 0.85em; margin-top: 5px; }
-        .empty { text-align: center; color: #999; padding: 20px; }
-    </style>
+    <title>FILEY</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>📥 Telecharger Fichier</h1>
+        <h1>FILEY</h1>
         
-        <div class="section">
-            <h2>Configuration</h2>
-            
-            <div class="input-group">
-                <label for="filepath">Chemin de destination:</label>
-                <input type="text" id="filepath" placeholder="Exemple: C:\Users\Rectorat\Downloads\Nouveau dossier">
+        <div class="main-box">
+            <!-- DEPOSER FICHIER -->
+            <div class="section-box">
+                <div class="section-title">Déposer un fichier</div>
+                <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput">
+                    <div class="drop-text">Glisse un fichier ici ou clique</div>
+                    <div id="fileName" style="color: #00a8cc; margin-top: 10px; font-size: 0.9em;"></div>
+                </div>
             </div>
             
-            <div class="button-group">
-                <button class="btn btn-download" onclick="downloadFile()">Telecharger</button>
-                <button class="btn btn-clear" onclick="clearForm()">Effacer</button>
+            <!-- CHOISIR FICHIER A EXECUTER -->
+            <div class="section-box">
+                <div class="section-title">Choisir le fichier a exécuter</div>
+                <div class="file-input-box">
+                    <input type="text" id="fileToExecute" placeholder="Nom ou chemin du fichier">
+                </div>
             </div>
             
-            <div id="message" class="message"></div>
+            <!-- CHEMIN TELEPORTATION -->
+            <div class="section-box">
+                <div class="path-section">
+                    <div class="checkbox-group">
+                        <div class="checkbox-custom" id="checkbox" onclick="toggleCheckbox()"></div>
+                        <label class="checkbox-label" onclick="toggleCheckbox()">Chemin de téléportation</label>
+                    </div>
+                    <div class="path-input-container">
+                        <input type="text" class="path-input" id="filepath" placeholder="/" disabled>
+                        <button class="btn-valider" onclick="validerTeleportation()">Valider</button>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <div class="section history">
-            <h2>Historique des telechargements</h2>
-            <div id="historyList" class="empty">En attente...</div>
+        <!-- HISTORIQUE -->
+        <div class="history-box">
+            <div class="history-title">📂 Historique</div>
+            <div id="historyContainer" class="history-items">
+                <div class="empty">Aucun fichier pour l'instant</div>
+            </div>
         </div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
         const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
-        
         const API_URL = `${SUPABASE_URL}/rest/v1/file_downloads`;
 
-        function downloadFile() {
-            const filepath = document.getElementById('filepath').value.trim();
+        let selectedFile = null;
+        let checkboxChecked = false;
+
+        function toggleCheckbox() {
+            checkboxChecked = !checkboxChecked;
+            const checkbox = document.getElementById('checkbox');
+            const filepath = document.getElementById('filepath');
             
-            if (!filepath) {
-                showMessage("Veuillez entrer un chemin valide", "error");
-                return;
+            if (checkboxChecked) {
+                checkbox.classList.add('checked');
+                checkbox.textContent = '✓';
+                filepath.disabled = false;
+                filepath.focus();
+            } else {
+                checkbox.classList.remove('checked');
+                checkbox.textContent = '';
+                filepath.disabled = true;
+                filepath.value = '';
             }
-            
-            sendDownloadRequest(filepath);
         }
 
-        async function sendDownloadRequest(filepath) {
-            try {
-                const data = {
-                    filename: "data.txt",
-                    destination: filepath,
-                    status: "en_attente",
-                    timestamp: new Date().toISOString()
-                };
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                document.getElementById('fileName').textContent = selectedFile.name;
+            }
+        });
 
+        async function validerTeleportation() {
+            const filepath = document.getElementById('filepath').value.trim();
+            const fileToExecute = document.getElementById('fileToExecute').value.trim();
+            
+            if (!filepath) {
+                alert('Entrez un chemin valide');
+                return;
+            }
+
+            const data = {
+                filename: selectedFile ? selectedFile.name : fileToExecute || 'fichier',
+                destination: filepath,
+                status: "telecharge",
+                teleporte: false,
+                lance: false,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
                 const response = await fetch(API_URL, {
                     method: "POST",
                     headers: {
@@ -192,28 +116,16 @@
                 });
 
                 if (response.ok) {
-                    showMessage("Requete envoyee. En attente du telechargement...", "info");
-                    setTimeout(() => loadHistory(), 1000);
-                } else {
-                    showMessage("Erreur lors de l'envoi", "error");
+                    document.getElementById('filepath').value = '';
+                    document.getElementById('fileToExecute').value = '';
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('fileName').textContent = '';
+                    selectedFile = null;
+                    loadHistory();
                 }
             } catch (error) {
-                showMessage("Erreur: " + error.message, "error");
+                alert('Erreur: ' + error.message);
             }
-        }
-
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = 'message ' + type;
-            setTimeout(() => {
-                msg.className = 'message';
-            }, 5000);
-        }
-
-        function clearForm() {
-            document.getElementById('filepath').value = '';
-            showMessage("Formulaire efface", "info");
         }
 
         async function loadHistory() {
@@ -228,30 +140,40 @@
                 const downloads = await response.json();
                 displayHistory(downloads);
             } catch (error) {
-                console.error("Erreur:", error);
+                console.error('Erreur:', error);
             }
         }
 
         function displayHistory(downloads) {
-            const list = document.getElementById('historyList');
+            const container = document.getElementById('historyContainer');
             
             if (!downloads || downloads.length === 0) {
-                list.innerHTML = '<div class="empty">Aucun telechargement</div>';
+                container.innerHTML = '<div class="empty">Aucun fichier pour l\'instant</div>';
                 return;
             }
 
-            list.innerHTML = downloads.map(d => {
-                const statusClass = d.status === 'succes' ? 'success' : 'error';
-                const statusText = d.status === 'succes' ? 'SUCCES' : 'EN ATTENTE';
-                
-                return `
-                    <div class="history-item ${statusClass}">
-                        <div class="history-filename">📄 ${d.filename}</div>
-                        <div class="history-destination">Destination: ${d.destination}</div>
-                        <div class="history-status">${statusText} - ${new Date(d.timestamp).toLocaleString('fr-FR')}</div>
+            container.innerHTML = downloads.map(d => `
+                <div class="history-item">
+                    <div class="folder-icon">📁</div>
+                    <div class="file-info">
+                        <div class="file-name">${d.filename}</div>
                     </div>
-                `;
-            }).join('');
+                    <div class="status-badges">
+                        <div class="badge telecharge">
+                            <div class="badge-icon ${d.status === 'telecharge' ? 'checked' : ''}">✓</div>
+                            <span>Téléchargé</span>
+                        </div>
+                        <div class="badge teleporte">
+                            <div class="badge-icon ${d.teleporte ? 'checked' : ''}">○</div>
+                            <span>Teleporté</span>
+                        </div>
+                        <div class="badge lance">
+                            <div class="badge-icon ${d.lance ? 'checked' : ''}">●</div>
+                            <span>Lancé</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         loadHistory();
