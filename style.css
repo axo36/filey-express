@@ -95,7 +95,6 @@ h1 {
 
 .path-section {
     margin-top: 20px;
-    display: flex;
     align-items: center;
     gap: 20px;
 }
@@ -104,6 +103,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 12px;
+    margin-bottom: 1rem;
 }
 
 .checkbox-custom {
