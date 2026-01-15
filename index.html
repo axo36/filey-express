@@ -66,10 +66,6 @@
             color: white;
         }
         .btn-off:hover { background: #dc2626; }
-        .btn:disabled {
-            background: #999;
-            cursor: not-allowed;
-        }
         
         .info {
             background: #f0f4ff;
@@ -96,8 +92,8 @@
         </div>
         
         <div class="button-group">
-            <button class="btn btn-on" onclick="sendStatus('on')">🟢 Passer en ON</button>
-            <button class="btn btn-off" onclick="sendStatus('off')">🔴 Passer en OFF</button>
+            <button class="btn btn-on" onclick="sendStatus('on')">🟢 ON</button>
+            <button class="btn btn-off" onclick="sendStatus('off')">🔴 OFF</button>
         </div>
         
         <div class="info">
@@ -115,7 +111,6 @@
         
         const API_URL = `${SUPABASE_URL}/rest/v1/status`;
 
-        // Envoyer le statut
         async function sendStatus(state) {
             try {
                 const data = {
@@ -136,15 +131,12 @@
                 if (response.ok) {
                     console.log("✅ Envoyé:", state);
                     loadStatus();
-                } else {
-                    console.error("❌ Erreur:", response.status);
                 }
             } catch (error) {
                 console.error("❌ Erreur:", error);
             }
         }
 
-        // Charger le dernier statut
         async function loadStatus() {
             try {
                 const response = await fetch(API_URL + '?order=id.desc&limit=1', {
@@ -169,16 +161,13 @@
                     }
                     
                     document.getElementById('lastUpdate').textContent = 
-                        'Dernier update: ' + timestamp.toLocaleString('fr-FR');
-                    
-                    console.log("📥 Statut chargé:", state);
+                        'Dernier: ' + timestamp.toLocaleString('fr-FR');
                 }
             } catch (error) {
-                console.error("❌ Erreur chargement:", error);
+                console.error("❌ Erreur:", error);
             }
         }
 
-        // Charger au démarrage et toutes les 2 secondes
         loadStatus();
         setInterval(loadStatus, 2000);
     </script>
