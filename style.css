@@ -35,11 +35,9 @@ h1 {
 }
 
 .section-box {
-    border: 1px solid #00d4ff;
     border-radius: 10px;
     padding: 25px;
     margin-bottom: 20px;
-    background: rgba(0, 212, 255, 0.02);
 }
 
 .section-title {
