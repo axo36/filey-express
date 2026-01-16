@@ -3,6 +3,9 @@ const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const API_URL = `${SUPABASE_URL}/rest/v1/file_downloads`;
 
+console.log("✅ app.js CHARGÉ CORRECTEMENT");
+console.log("URL:", API_URL);
+
 // ===== VARIABLES GLOBALES =====
 let selectedFiles = [];
 let fileToExecute = null;
