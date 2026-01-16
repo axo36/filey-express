@@ -17,8 +17,8 @@
                 <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" multiple>
                     <div class="drop-text">Glisse des fichiers ici ou clique</div>
-                    <div id="filesList" style="color: #00a8cc; margin-top: 10px; font-size: 0.9em;"></div>
                 </div>
+                <div id="filesContainer" class="files-container"></div>
             </div>
             
             <!-- CHOISIR FICHIER A EXECUTER -->
@@ -27,8 +27,8 @@
                 <div class="drop-zone" onclick="document.getElementById('fileToExecuteInput').click()">
                     <input type="file" id="fileToExecuteInput">
                     <div class="drop-text">Glisse un fichier ici ou clique</div>
-                    <div id="fileToExecuteName" style="color: #00a8cc; margin-top: 10px; font-size: 0.9em;"></div>
                 </div>
+                <div id="executionFileContainer" class="execution-file-container"></div>
             </div>
             
             <!-- CHEMIN TELEPORTATION -->
@@ -56,13 +56,71 @@
     </div>
 
     <script>
+        // ===== CONFIGURATION SUPABASE =====
         const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
         const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
         const API_URL = `${SUPABASE_URL}/rest/v1/file_downloads`;
 
-        let selectedFile = null;
+        // ===== VARIABLES GLOBALES =====
+        let selectedFiles = [];
+        let fileToExecute = null;
         let checkboxChecked = false;
 
+        // ===== GESTION DES FICHIERS À DÉPOSER =====
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const newFiles = Array.from(e.target.files);
+            selectedFiles = [...selectedFiles, ...newFiles];
+            updateFilesDisplay();
+        });
+
+        function updateFilesDisplay() {
+            const container = document.getElementById('filesContainer');
+            if (selectedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = selectedFiles.map((file, index) => `
+                <div class="file-item">
+                    <span class="file-item-name">📄 ${file.name}</span>
+                    <button class="btn-remove" onclick="removeFile(${index})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFilesDisplay();
+        }
+
+        // ===== GESTION DU FICHIER À EXÉCUTER =====
+        document.getElementById('fileToExecuteInput').addEventListener('change', function(e) {
+            fileToExecute = e.target.files[0];
+            updateExecutionFileDisplay();
+        });
+
+        function updateExecutionFileDisplay() {
+            const container = document.getElementById('executionFileContainer');
+            if (!fileToExecute) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="file-item">
+                    <span class="file-item-name">⚙️ ${fileToExecute.name}</span>
+                    <button class="btn-remove" onclick="removeExecutionFile()">✕</button>
+                </div>
+            `;
+        }
+
+        function removeExecutionFile() {
+            fileToExecute = null;
+            document.getElementById('fileToExecuteInput').value = '';
+            updateExecutionFileDisplay();
+        }
+
+        // ===== GESTION DE LA COCHE DU CHEMIN =====
         function toggleCheckbox() {
             checkboxChecked = !checkboxChecked;
             const checkbox = document.getElementById('checkbox');
@@ -81,25 +139,20 @@
             }
         }
 
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            selectedFile = e.target.files[0];
-            if (selectedFile) {
-                document.getElementById('fileName').textContent = selectedFile.name;
-            }
-        });
-
+        // ===== VALIDATION ET ENVOI =====
         async function validerTeleportation() {
+            // Vérifications
             if (selectedFiles.length === 0) {
-                alert('Selectionnez au moins un fichier à déposer');
+                alert('Sélectionnez au moins un fichier à déposer');
                 return;
             }
 
             if (!fileToExecute) {
-                alert('Selectionnez un fichier à exécuter');
+                alert('Sélectionnez un fichier à exécuter');
                 return;
             }
 
-            // Si la coche est activée, vérifier le chemin
+            // Si coche activée, vérifier le chemin
             if (checkboxChecked) {
                 const filepath = document.getElementById('filepath').value.trim();
                 if (!filepath) {
@@ -119,11 +172,13 @@
                     status: "telecharge",
                     teleporte: false,
                     lance: false,
+                    erreur: "",
+                    erreurSource: "",
                     timestamp: new Date().toISOString()
                 };
 
                 try {
-                    await fetch(API_URL, {
+                    const response = await fetch(API_URL, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -132,25 +187,32 @@
                         },
                         body: JSON.stringify(data)
                     });
+
+                    if (!response.ok) {
+                        console.error("Erreur HTML:", response.status);
+                    }
                 } catch (error) {
-                    console.error('Erreur:', error);
+                    console.error('Erreur HTML:', error);
                 }
             }
 
-            // Réinitialiser
-            document.getElementById('filepath').value = '';
-            document.getElementById('fileInput').value = '';
-            document.getElementById('filesList').textContent = '';
-            document.getElementById('fileToExecuteInput').value = '';
-            document.getElementById('fileToExecuteName').textContent = '';
-            selectedFiles = [];
-            fileToExecute = null;
-            loadHistory();
+            // Réinitialiser après envoi
+            setTimeout(() => {
+                document.getElementById('filepath').value = '';
+                document.getElementById('fileInput').value = '';
+                document.getElementById('fileToExecuteInput').value = '';
+                selectedFiles = [];
+                fileToExecute = null;
+                updateFilesDisplay();
+                updateExecutionFileDisplay();
+                loadHistory();
+            }, 500);
         }
 
+        // ===== CHARGER ET AFFICHER L'HISTORIQUE =====
         async function loadHistory() {
             try {
-                const response = await fetch(API_URL + '?order=id.desc&limit=10', {
+                const response = await fetch(API_URL + '?order=id.desc&limit=20', {
                     headers: {
                         "Authorization": `Bearer ${SUPABASE_KEY}`,
                         "apikey": SUPABASE_KEY
@@ -160,7 +222,7 @@
                 const downloads = await response.json();
                 displayHistory(downloads);
             } catch (error) {
-                console.error('Erreur:', error);
+                console.error('Erreur historique:', error);
             }
         }
 
@@ -172,30 +234,47 @@
                 return;
             }
 
-            container.innerHTML = downloads.map(d => `
-                <div class="history-item">
-                    <div class="folder-icon">📁</div>
-                    <div class="file-info">
-                        <div class="file-name">${d.filename}</div>
+            container.innerHTML = downloads.map(d => {
+                // Déterminer les statuts
+                const telechargeOk = d.status === 'telecharge' && !d.erreur;
+                const teleporteOk = d.teleporte && !d.erreur;
+                const lanceoOk = d.lance && !d.erreur;
+                
+                // Déterminer s'il y a une erreur et sa source
+                let erreurDisplay = '';
+                if (d.erreur) {
+                    erreurDisplay = `<div class="error-badge">⚠️ Erreur (${d.erreurSource})</div>`;
+                }
+
+                return `
+                    <div class="history-item">
+                        <div class="folder-icon">📁</div>
+                        <div class="file-info">
+                            <div class="file-name">${d.filename}</div>
+                            <div class="execution-info">Exécute: ${d.fileToExecute}</div>
+                            ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
+                        </div>
+                        <div class="status-badges">
+                            <div class="badge telecharge">
+                                <div class="badge-icon ${telechargeOk ? 'checked' : ''}">✓</div>
+                                <span>Téléchargé</span>
+                            </div>
+                            <div class="badge teleporte">
+                                <div class="badge-icon ${teleporteOk ? 'checked' : ''}">○</div>
+                                <span>Teleporté</span>
+                            </div>
+                            <div class="badge lance">
+                                <div class="badge-icon ${lanceoOk ? 'checked' : ''}">●</div>
+                                <span>Lancé</span>
+                            </div>
+                        </div>
+                        ${erreurDisplay}
                     </div>
-                    <div class="status-badges">
-                        <div class="badge telecharge">
-                            <div class="badge-icon ${d.status === 'telecharge' ? 'checked' : ''}">✓</div>
-                            <span>Téléchargé</span>
-                        </div>
-                        <div class="badge teleporte">
-                            <div class="badge-icon ${d.teleporte ? 'checked' : ''}">○</div>
-                            <span>Teleporté</span>
-                        </div>
-                        <div class="badge lance">
-                            <div class="badge-icon ${d.lance ? 'checked' : ''}">●</div>
-                            <span>Lancé</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
+        // ===== INITIALISATION =====
         loadHistory();
         setInterval(loadHistory, 2000);
     </script>
