@@ -73,7 +73,6 @@ h1 {
     font-size: 1.1em;
 }
 
-/* FICHIERS SÉLECTIONNÉS */
 .files-container,
 .execution-file-container {
     margin-top: 15px;
@@ -111,7 +110,6 @@ h1 {
     font-weight: bold;
 }
 
-/* CHEMIN TELEPORTATION */
 .path-section {
     margin-top: 20px;
     display: flex;
@@ -202,7 +200,6 @@ h1 {
     box-shadow: 0 0 20px #00d4ff;
 }
 
-/* HISTORIQUE */
 .history-box {
     border: 2px solid #00d4ff;
     border-radius: 15px;
