@@ -15,9 +15,9 @@
             <div class="section-box">
                 <div class="section-title">Déposer un fichier</div>
                 <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput">
-                    <div class="drop-text">Glisse un fichier ici ou clique</div>
-                    <div id="fileName" style="color: #00a8cc; margin-top: 10px; font-size: 0.9em;"></div>
+                    <input type="file" id="fileInput" multiple>
+                    <div class="drop-text">Glisse des fichiers ici ou clique</div>
+                    <div id="filesList" style="color: #00a8cc; margin-top: 10px; font-size: 0.9em;"></div>
                 </div>
             </div>
             
@@ -89,6 +89,11 @@
         });
 
         async function validerTeleportation() {
+            if (!checkboxChecked) {
+                alert('Veuillez cocher "Chemin de téléportation" d\'abord');
+                return;
+            }
+
             const filepath = document.getElementById('filepath').value.trim();
             
             if (!filepath) {
@@ -96,8 +101,8 @@
                 return;
             }
 
-            if (!selectedFile) {
-                alert('Selectionnez un fichier à déposer');
+            if (selectedFiles.length === 0) {
+                alert('Selectionnez au moins un fichier à déposer');
                 return;
             }
 
@@ -106,40 +111,42 @@
                 return;
             }
 
-            const data = {
-                filename: selectedFile.name,
-                fileToExecute: fileToExecute.name,
-                destination: filepath,
-                status: "telecharge",
-                teleporte: false,
-                lance: false,
-                timestamp: new Date().toISOString()
-            };
+            // Envoyer chaque fichier
+            for (let file of selectedFiles) {
+                const data = {
+                    filename: file.name,
+                    fileToExecute: fileToExecute.name,
+                    destination: filepath,
+                    status: "telecharge",
+                    teleporte: false,
+                    lance: false,
+                    timestamp: new Date().toISOString()
+                };
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${SUPABASE_KEY}`,
-                        "apikey": SUPABASE_KEY
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    document.getElementById('filepath').value = '';
-                    document.getElementById('fileInput').value = '';
-                    document.getElementById('fileName').textContent = '';
-                    document.getElementById('fileToExecuteInput').value = '';
-                    document.getElementById('fileToExecuteName').textContent = '';
-                    selectedFile = null;
-                    fileToExecute = null;
-                    loadHistory();
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${SUPABASE_KEY}`,
+                            "apikey": SUPABASE_KEY
+                        },
+                        body: JSON.stringify(data)
+                    });
+                } catch (error) {
+                    console.error('Erreur:', error);
                 }
-            } catch (error) {
-                alert('Erreur: ' + error.message);
             }
+
+            // Réinitialiser
+            document.getElementById('filepath').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filesList').textContent = '';
+            document.getElementById('fileToExecuteInput').value = '';
+            document.getElementById('fileToExecuteName').textContent = '';
+            selectedFiles = [];
+            fileToExecute = null;
+            loadHistory();
         }
 
         async function loadHistory() {
