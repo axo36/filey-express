@@ -89,18 +89,6 @@
         });
 
         async function validerTeleportation() {
-            if (!checkboxChecked) {
-                alert('Veuillez cocher "Chemin de téléportation" d\'abord');
-                return;
-            }
-
-            const filepath = document.getElementById('filepath').value.trim();
-            
-            if (!filepath) {
-                alert('Entrez un chemin valide');
-                return;
-            }
-
             if (selectedFiles.length === 0) {
                 alert('Selectionnez au moins un fichier à déposer');
                 return;
@@ -110,6 +98,17 @@
                 alert('Selectionnez un fichier à exécuter');
                 return;
             }
+
+            // Si la coche est activée, vérifier le chemin
+            if (checkboxChecked) {
+                const filepath = document.getElementById('filepath').value.trim();
+                if (!filepath) {
+                    alert('Entrez un chemin valide');
+                    return;
+                }
+            }
+
+            const filepath = checkboxChecked ? document.getElementById('filepath').value.trim() : '';
 
             // Envoyer chaque fichier
             for (let file of selectedFiles) {
