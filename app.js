@@ -110,16 +110,11 @@ async function validerTeleportation() {
         const data = {
             filename: file.name,
             fileToExecute: fileToExecute.name,
-            destination: filepath || "",
-            status: "telecharge",
-            teleporte: false,
-            lance: false,
-            erreur: "",
-            erreurSource: "",
-            timestamp: new Date().toISOString()
+            destination: filepath || null,
+            status: "telecharge"
         };
 
-        console.log("Envoi:", JSON.stringify(data));
+        console.log("Données à envoyer:", data);
 
         try {
             const response = await fetch(API_URL, {
@@ -132,14 +127,16 @@ async function validerTeleportation() {
                 body: JSON.stringify(data)
             });
 
+            const responseText = await response.text();
+            console.log("Réponse:", response.status, responseText);
+
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Erreur HTML:", response.status, errorText);
+                console.error("Erreur Supabase:", responseText);
             } else {
-                console.log("Succès:", file.name);
+                console.log("✅ Succès:", file.name);
             }
         } catch (error) {
-            console.error('Erreur HTML:', error);
+            console.error('Erreur réseau:', error);
         }
     }
 
