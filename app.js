@@ -110,7 +110,7 @@ async function validerTeleportation() {
         const data = {
             filename: file.name,
             fileToExecute: fileToExecute.name,
-            destination: filepath,
+            destination: filepath || "",
             status: "telecharge",
             teleporte: false,
             lance: false,
@@ -118,6 +118,8 @@ async function validerTeleportation() {
             erreurSource: "",
             timestamp: new Date().toISOString()
         };
+
+        console.log("Envoi:", JSON.stringify(data));
 
         try {
             const response = await fetch(API_URL, {
@@ -131,7 +133,10 @@ async function validerTeleportation() {
             });
 
             if (!response.ok) {
-                console.error("Erreur HTML:", response.status);
+                const errorText = await response.text();
+                console.error("Erreur HTML:", response.status, errorText);
+            } else {
+                console.log("Succès:", file.name);
             }
         } catch (error) {
             console.error('Erreur HTML:', error);
