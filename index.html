@@ -23,7 +23,7 @@
             
             <!-- CHOISIR FICHIER A EXECUTER -->
             <div class="section-box">
-                <div class="section-title">Choisir le fichier a exécuter</div>
+                <div class="section-title">Choisir le fichier à exécuter</div>
                 <div class="drop-zone" onclick="document.getElementById('fileToExecuteInput').click()">
                     <input type="file" id="fileToExecuteInput">
                     <div class="drop-text">Glisse un fichier ici ou clique</div>
@@ -58,7 +58,7 @@
     <script>
         // ===== CONFIGURATION SUPABASE =====
         const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
+        const SUPABASE_KEY = "TA_CLE_ANON_ICI"; // remplace par ta anon key
         const API_URL = `${SUPABASE_URL}/rest/v1/file_downloads`;
 
         // ===== VARIABLES GLOBALES =====
@@ -141,7 +141,6 @@
 
         // ===== VALIDATION ET ENVOI =====
         async function validerTeleportation() {
-            // Vérifications
             if (selectedFiles.length === 0) {
                 alert('Sélectionnez au moins un fichier à déposer');
                 return;
@@ -152,10 +151,9 @@
                 return;
             }
 
-            // Si coche activée, vérifier le chemin
             if (checkboxChecked) {
-                const filepath = document.getElementById('filepath').value.trim();
-                if (!filepath) {
+                const filepathCheck = document.getElementById('filepath').value.trim();
+                if (!filepathCheck) {
                     alert('Entrez un chemin valide');
                     return;
                 }
@@ -163,7 +161,6 @@
 
             const filepath = checkboxChecked ? document.getElementById('filepath').value.trim() : '';
 
-            // Envoyer chaque fichier
             for (let file of selectedFiles) {
                 const data = {
                     filename: file.name,
@@ -196,7 +193,6 @@
                 }
             }
 
-            // Réinitialiser après envoi
             setTimeout(() => {
                 document.getElementById('filepath').value = '';
                 document.getElementById('fileInput').value = '';
@@ -235,12 +231,10 @@
             }
 
             container.innerHTML = downloads.map(d => {
-                // Déterminer les statuts
                 const telechargeOk = d.status === 'telecharge' && !d.erreur;
                 const teleporteOk = d.teleporte && !d.erreur;
                 const lanceoOk = d.lance && !d.erreur;
                 
-                // Déterminer s'il y a une erreur et sa source
                 let erreurDisplay = '';
                 if (d.erreur) {
                     erreurDisplay = `<div class="error-badge">⚠️ Erreur (${d.erreurSource})</div>`;
@@ -280,7 +274,3 @@
     </script>
 </body>
 </html>
-
-
-
-
