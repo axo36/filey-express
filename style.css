@@ -13,8 +13,12 @@
     gap: 5px;
 }
 
-.status-line:first-child {
+.status-line.success {
     color: #10b981;
+}
+
+.status-line.pending {
+    color: #f59e0b;
 }
 
 .status-badges {
