@@ -1,7 +1,7 @@
 // ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
-const TABLE_NAME = "uploads";
+const TABLE_NAME = "uploads"; // NOUVELLE TABLE
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 
 console.log("✅ FILEY DÉMARRÉ");
@@ -172,22 +172,70 @@ function displayHistory(downloads) {
         return;
     }
 
-    container.innerHTML = downloads.map(d => `
-        <div class="history-item">
-            <div class="folder-icon">📁</div>
-            <div class="file-info">
-                <div class="file-name">${d.filename}</div>
-                <div class="execution-info">Exécute: ${d.file_to_execute}</div>
-                ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
-            </div>
-            <div class="status-badges">
-                <div class="badge telecharge">
-                    <div class="badge-icon checked">✓</div>
-                    <span>Téléchargé</span>
+    container.innerHTML = downloads.map(d => {
+        const hasDestination = d.destination && d.destination.trim() !== '';
+        const recu = true; // Reçu si dans la base
+        const telecharge = d.status === 'téléchargé';
+        const teleporte = hasDestination ? (d.status === 'téléporté' || d.status === 'téléchargé') : null;
+        const execute = d.status === 'exécuté';
+
+        return `
+            <div class="history-item">
+                <div class="folder-icon">📁</div>
+                <div class="file-info">
+                    <div class="file-name">${d.filename}</div>
+                    <div class="execution-info">Exécute: ${d.file_to_execute}</div>
+                    ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
                 </div>
+                <div class="status-badges">
+                    <div class="badge">
+                        <div class="badge-icon ${recu ? 'checked' : ''}">✓</div>
+                        <span>Reçu</span>
+                    </div>
+                    <div class="badge">
+                        <div class="badge-icon ${telecharge ? 'checked' : ''}">↓</div>
+                        <span>Téléchargé</span>
+                    </div>
+                    ${teleporte !== null ? `
+                    <div class="badge">
+                        <div class="badge-icon ${teleporte ? 'checked' : ''}">→</div>
+                        <span>Teleporté</span>
+                    </div>
+                    ` : ''}
+                    <div class="badge">
+                        <div class="badge-icon ${execute ? 'checked' : ''}">▶</div>
+                        <span>Exécuté</span>
+                    </div>
+                </div>
+                <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+async function deleteFile(id) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(API_URL + '?id=eq.' + id, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                "apikey": SUPABASE_KEY
+            }
+        });
+
+        if (response.ok) {
+            console.log("✅ Fichier supprimé");
+            loadHistory();
+        } else {
+            console.error("❌ Erreur suppression");
+        }
+    } catch (error) {
+        console.error("Erreur:", error);
+    }
 }
 
 loadHistory();
