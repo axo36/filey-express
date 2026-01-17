@@ -1,7 +1,7 @@
 // ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
-const TABLE_NAME = "filey_uploads";
+const TABLE_NAME = "file_downloads";
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 
 console.log("✅ FILEY DÉMARRÉ");
