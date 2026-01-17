@@ -174,10 +174,12 @@ function displayHistory(downloads) {
 
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
-        const recu = true; // Reçu si dans la base
-        const telecharge = d.status === 'téléchargé';
-        const teleporte = hasDestination ? (d.status === 'téléporté' || d.status === 'téléchargé') : null;
-        const execute = d.status === 'exécuté';
+        
+        // Déterminer les statuts
+        let recu = '✓'; // Toujours reçu s'il est dans la base
+        let telecharge = d.status === 'téléchargé' ? '✓' : (d.status === 'téléchargement' ? '◐' : '✕');
+        let teleporte = hasDestination ? (d.status === 'téléporté' ? '✓' : (d.status === 'téléportation' ? '◐' : '✕')) : null;
+        let execute = d.status === 'exécuté' ? '✓' : (d.status === 'exécution' ? '◐' : '✕');
 
         return `
             <div class="history-item">
@@ -187,25 +189,11 @@ function displayHistory(downloads) {
                     <div class="execution-info">Exécute: ${d.file_to_execute}</div>
                     ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
                 </div>
-                <div class="status-badges">
-                    <div class="badge">
-                        <div class="badge-icon ${recu ? 'checked' : ''}">✓</div>
-                        <span>Reçu</span>
-                    </div>
-                    <div class="badge">
-                        <div class="badge-icon ${telecharge ? 'checked' : ''}">↓</div>
-                        <span>Téléchargé</span>
-                    </div>
-                    ${teleporte !== null ? `
-                    <div class="badge">
-                        <div class="badge-icon ${teleporte ? 'checked' : ''}">→</div>
-                        <span>Teleporté</span>
-                    </div>
-                    ` : ''}
-                    <div class="badge">
-                        <div class="badge-icon ${execute ? 'checked' : ''}">▶</div>
-                        <span>Exécuté</span>
-                    </div>
+                <div class="status-column">
+                    <div class="status-line" title="Reçu">${recu} Reçu</div>
+                    <div class="status-line" title="Téléchargé">${telecharge} Téléchargé</div>
+                    ${teleporte !== null ? `<div class="status-line" title="Teleporté">${teleporte} Teleporté</div>` : ''}
+                    <div class="status-line" title="Exécuté">${execute} Exécuté</div>
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
