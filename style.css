@@ -1,32 +1,4 @@
-.status-column {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-start;
-}
-
-.status-line {
-    color: #ff6b6b;
-    font-size: 0.95em;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.status-line.success {
-    color: #10b981;
-}
-
-.status-line.pending {
-    color: #f59e0b;
-}
-
-.status-badges {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    flex-wrap: wrap;
-}* {
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -287,6 +259,29 @@ h1 {
     font-size: 0.85em;
 }
 
+.status-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.status-line {
+    color: #ff6b6b;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-line.success {
+    color: #10b981;
+}
+
+.status-line.pending {
+    color: #f59e0b;
+}
+
 .status-badges {
     display: flex;
     gap: 20px;
@@ -343,12 +338,6 @@ h1 {
     margin-top: 10px;
 }
 
-.empty {
-    text-align: center;
-    color: #00a8cc;
-    padding: 40px;
-}
-
 .btn-delete-file {
     position: absolute;
     top: 10px;
@@ -365,4 +354,10 @@ h1 {
 .btn-delete-file:hover {
     color: #ff0000;
     font-weight: bold;
+}
+
+.empty {
+    text-align: center;
+    color: #00a8cc;
+    padding: 40px;
 }
