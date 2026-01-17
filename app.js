@@ -175,11 +175,11 @@ function displayHistory(downloads) {
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
         
-        // Déterminer les statuts
-        let recu = '✓'; // Toujours reçu s'il est dans la base
-        let telecharge = d.status === 'téléchargé' ? '✓' : (d.status === 'téléchargement' ? '◐' : '✕');
-        let teleporte = hasDestination ? (d.status === 'téléporté' ? '✓' : (d.status === 'téléportation' ? '◐' : '✕')) : null;
-        let execute = d.status === 'exécuté' ? '✓' : (d.status === 'exécution' ? '◐' : '✕');
+        // Déterminer les statuts (vides au départ, le code local les remplit)
+        let recu = d.status ? '✓' : '◐'; // En attente si pas de status
+        let telecharge = d.status === 'telecharge' ? '✓' : (d.status === 'en_attente' ? '◐' : '✕');
+        let teleporte = hasDestination ? (d.teleporte === true ? '✓' : (d.status === 'teleporte' ? '◐' : '◐')) : null;
+        let execute = d.lance === true ? '✓' : (d.status === 'execute' ? '◐' : '◐');
 
         return `
             <div class="history-item">
@@ -190,10 +190,10 @@ function displayHistory(downloads) {
                     ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
                 </div>
                 <div class="status-column">
-                    <div class="status-line" title="Reçu">${recu} Reçu</div>
-                    <div class="status-line" title="Téléchargé">${telecharge} Téléchargé</div>
-                    ${teleporte !== null ? `<div class="status-line" title="Teleporté">${teleporte} Teleporté</div>` : ''}
-                    <div class="status-line" title="Exécuté">${execute} Exécuté</div>
+                    <div class="status-line ${d.status ? 'success' : 'pending'}" title="Code local a reçu l'info">${recu} Code local</div>
+                    <div class="status-line ${d.status === 'telecharge' ? 'success' : 'pending'}" title="Fichier téléchargé">${telecharge} Téléchargé</div>
+                    ${teleporte !== null ? `<div class="status-line ${d.teleporte ? 'success' : 'pending'}" title="Fichier teleporté">${teleporte} Teleporté</div>` : ''}
+                    <div class="status-line ${d.lance ? 'success' : 'pending'}" title="Code exécuté">${execute} Exécuté</div>
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
