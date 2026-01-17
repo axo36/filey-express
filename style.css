@@ -1,4 +1,28 @@
-* {
+.status-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.status-line {
+    color: #ff6b6b;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-line:first-child {
+    color: #10b981;
+}
+
+.status-badges {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
