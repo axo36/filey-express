@@ -4,7 +4,7 @@ const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "filey_uploads";
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 
-console.log("✅ FILEYf DÉMARRÉ");
+console.log("✅ FILEY DÉMARRÉ");
 console.log("Table:", TABLE_NAME);
 
 // ===== VARIABLES =====
