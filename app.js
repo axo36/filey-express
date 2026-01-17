@@ -4,7 +4,7 @@ const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads"; // NOUVELLE TABLE
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 
-console.log("✅ FILEY DÉMARRÉ 2");
+console.log("✅ FILEY DÉMARRÉ 3");
 console.log("Table:", TABLE_NAME);
 
 // ===== VARIABLES =====
@@ -183,17 +183,19 @@ function displayHistory(downloads) {
 
         return `
             <div class="history-item">
-                <div class="folder-icon">📁</div>
+                <div class="folder-section">
+                    <div class="folder-icon">📁</div>
+                    <div class="status-column">
+                        <div class="status-line ${d.status ? 'success' : 'pending'}" title="Code local a reçu l'info">${recu} Code local</div>
+                        <div class="status-line ${d.status === 'telecharge' ? 'success' : 'pending'}" title="Fichier téléchargé">${telecharge} Téléchargé</div>
+                        ${teleporte !== null ? `<div class="status-line ${d.teleporte ? 'success' : 'pending'}" title="Fichier teleporté">${teleporte} Teleporté</div>` : ''}
+                        <div class="status-line ${d.lance ? 'success' : 'pending'}" title="Code exécuté">${execute} Exécuté</div>
+                    </div>
+                </div>
                 <div class="file-info">
                     <div class="file-name">${d.filename}</div>
                     <div class="execution-info">Exécute: ${d.file_to_execute}</div>
                     ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
-                </div>
-                <div class="status-column">
-                    <div class="status-line ${d.status ? 'success' : 'pending'}" title="Code local a reçu l'info">${recu} Code local</div>
-                    <div class="status-line ${d.status === 'telecharge' ? 'success' : 'pending'}" title="Fichier téléchargé">${telecharge} Téléchargé</div>
-                    ${teleporte !== null ? `<div class="status-line ${d.teleporte ? 'success' : 'pending'}" title="Fichier teleporté">${teleporte} Teleporté</div>` : ''}
-                    <div class="status-line ${d.lance ? 'success' : 'pending'}" title="Code exécuté">${execute} Exécuté</div>
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
