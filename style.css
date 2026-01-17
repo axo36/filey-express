@@ -228,6 +228,7 @@ h1 {
     background: rgba(0, 212, 255, 0.02);
     border-left: 3px solid #00d4ff;
     border-radius: 5px;
+    position: relative;
 }
 
 .folder-icon {
@@ -318,4 +319,22 @@ h1 {
     text-align: center;
     color: #00a8cc;
     padding: 40px;
+}
+
+.btn-delete-file {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: all 0.3s;
+}
+
+.btn-delete-file:hover {
+    color: #ff0000;
+    font-weight: bold;
 }
