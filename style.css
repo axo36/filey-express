@@ -275,15 +275,28 @@ h1 {
 }
 
 .status-line {
-    color: #ff6b6b;
+    color: #f59e0b;
     font-size: 0.95em;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+}
+
+.status-line::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 .status-line.success {
     color: #10b981;
+}
+
+.status-line.success::before {
+    background: #10b981;
 }
 
 .status-line.pending {
