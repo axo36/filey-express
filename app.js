@@ -4,7 +4,7 @@ const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads"; // NOUVELLE TABLE
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 
-console.log("✅ FILEY DÉMARRÉ 4");
+console.log("✅ FILEY DÉMARRÉ 5");
 console.log("Table:", TABLE_NAME);
 
 // ===== VARIABLES =====
@@ -176,10 +176,10 @@ function displayHistory(downloads) {
         const hasDestination = d.destination && d.destination.trim() !== '';
         
         // TOUS les statuts commencent en ◐ (en attente du code LOCAL)
-        let recu = '◐';
-        let telecharge = '◐';
-        let teleporte = '◐';
-        let execute = '◐';
+        let recu = '◯';
+        let telecharge = '◯';
+        let teleporte = '◯';
+        let execute = '◯';
 
         return `
             <div class="history-item">
