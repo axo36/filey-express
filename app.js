@@ -4,7 +4,7 @@ const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads"; // NOUVELLE TABLE
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 
-console.log("✅ FILEY DÉMARRÉ 3");
+console.log("✅ FILEY DÉMARRÉ");
 console.log("Table:", TABLE_NAME);
 
 // ===== VARIABLES =====
@@ -175,21 +175,22 @@ function displayHistory(downloads) {
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
         
-        // Déterminer les statuts (vides au départ, le code local les remplit)
-        let recu = d.status ? '✓' : '◐'; // En attente si pas de status
-        let telecharge = d.status === 'telecharge' ? '✓' : (d.status === 'en_attente' ? '◐' : '✕');
-        let teleporte = hasDestination ? (d.teleporte === true ? '✓' : (d.status === 'teleporte' ? '◐' : '◐')) : null;
-        let execute = d.lance === true ? '✓' : (d.status === 'execute' ? '◐' : '◐');
+        // TOUS les statuts commencent en ◐ (en attente)
+        // Le code LOCAL les change en ✓ (succès) ou ✕ (erreur)
+        let recu = d.status ? '✓' : '◐';
+        let telecharge = '◐'; // En attente par défaut
+        let teleporte = '◐'; // En attente par défaut
+        let execute = '◐'; // En attente par défaut
 
         return `
             <div class="history-item">
                 <div class="folder-section">
                     <div class="folder-icon">📁</div>
                     <div class="status-column">
-                        <div class="status-line ${d.status ? 'success' : 'pending'}" title="Code local a reçu l'info">${recu} Code local</div>
-                        <div class="status-line ${d.status === 'telecharge' ? 'success' : 'pending'}" title="Fichier téléchargé">${telecharge} Téléchargé</div>
-                        ${teleporte !== null ? `<div class="status-line ${d.teleporte ? 'success' : 'pending'}" title="Fichier teleporté">${teleporte} Teleporté</div>` : ''}
-                        <div class="status-line ${d.lance ? 'success' : 'pending'}" title="Code exécuté">${execute} Exécuté</div>
+                        <div class="status-line pending" title="Code local a reçu l'info">${recu} Code local</div>
+                        <div class="status-line pending" title="Fichier téléchargé">${telecharge} Téléchargé</div>
+                        ${hasDestination ? `<div class="status-line pending" title="Fichier teleporté">${teleporte} Teleporté</div>` : ''}
+                        <div class="status-line pending" title="Code exécuté">${execute} Exécuté</div>
                     </div>
                 </div>
                 <div class="file-info">
