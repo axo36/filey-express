@@ -175,12 +175,11 @@ function displayHistory(downloads) {
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
         
-        // TOUS les statuts commencent en ◐ (en attente)
-        // Le code LOCAL les change en ✓ (succès) ou ✕ (erreur)
-        let recu = d.status ? '✓' : '◐';
-        let telecharge = '◐'; // En attente par défaut
-        let teleporte = '◐'; // En attente par défaut
-        let execute = '◐'; // En attente par défaut
+        // TOUS les statuts commencent en ◐ (en attente du code LOCAL)
+        let recu = '◐';
+        let telecharge = '◐';
+        let teleporte = '◐';
+        let execute = '◐';
 
         return `
             <div class="history-item">
