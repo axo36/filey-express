@@ -1,11 +1,14 @@
 // ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
-const TABLE_NAME = "uploads"; // NOUVELLE TABLE
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6aXd5cWxwY2drcGNncGNxamt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0OTc4MTYsImV4cCI6MjA1MzA3MzgxNn0.qEkgx5kKCJVPMkAakBF3xrqkukOlmMPLhwCBZL_Mhgc";
+const TABLE_NAME = "uploads";
+const STORAGE_BUCKET = "files"; // Nom du bucket Supabase Storage
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
+const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
-console.log("✅ FILEY DÉMARRÉ 5");
+console.log("✅ FILEY DÉMARRÉ - VERSION COMPLETE");
 console.log("Table:", TABLE_NAME);
+console.log("Storage:", STORAGE_BUCKET);
 
 // ===== VARIABLES =====
 let selectedFiles = [];
@@ -83,6 +86,40 @@ function toggleCheckbox() {
     }
 }
 
+// ===== UPLOAD FICHIER VERS SUPABASE STORAGE =====
+async function uploadFileToStorage(file) {
+    const timestamp = Date.now();
+    const filename = `${timestamp}_${file.name}`;
+    
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch(`${STORAGE_URL}/${filename}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'apikey': SUPABASE_KEY
+            },
+            body: file
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            console.error("❌ Erreur upload:", error);
+            return null;
+        }
+
+        const publicURL = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${filename}`;
+        console.log("✅ Fichier uploadé:", publicURL);
+        return publicURL;
+        
+    } catch (error) {
+        console.error("❌ Erreur réseau upload:", error);
+        return null;
+    }
+}
+
 // ===== VALIDER ET ENVOYER =====
 async function validerTeleportation() {
     if (selectedFiles.length === 0) {
@@ -100,15 +137,34 @@ async function validerTeleportation() {
 
     const filepath = checkboxChecked ? document.getElementById('filepath').value.trim() : '';
 
+    // Upload du fichier à exécuter
+    console.log("📤 Upload du fichier à exécuter...");
+    const executeFileURL = await uploadFileToStorage(fileToExecute);
+    if (!executeFileURL) {
+        alert("Erreur lors de l'upload du fichier à exécuter");
+        return;
+    }
+
+    // Upload et enregistrement de chaque fichier
     for (let file of selectedFiles) {
+        console.log(`📤 Upload de ${file.name}...`);
+        const fileURL = await uploadFileToStorage(file);
+        
+        if (!fileURL) {
+            alert(`Erreur lors de l'upload de ${file.name}`);
+            continue;
+        }
+
         const data = {
             filename: file.name,
+            file_url: fileURL,
             file_to_execute: fileToExecute.name,
+            execute_file_url: executeFileURL,
             destination: filepath || null,
-            status: "téléchargé"
+            status: "en_attente"
         };
 
-        console.log("Envoi:", data);
+        console.log("💾 Enregistrement dans la base:", data);
 
         try {
             const response = await fetch(API_URL, {
@@ -121,19 +177,18 @@ async function validerTeleportation() {
                 body: JSON.stringify(data)
             });
 
-            const responseText = await response.text();
-            console.log("Réponse:", response.status, responseText);
-
             if (!response.ok) {
-                console.error("❌ Erreur:", responseText);
+                const error = await response.text();
+                console.error("❌ Erreur base de données:", error);
             } else {
-                console.log("✅ OK:", file.name);
+                console.log("✅ Enregistré:", file.name);
             }
         } catch (error) {
             console.error("❌ Erreur réseau:", error);
         }
     }
 
+    // Réinitialisation
     setTimeout(() => {
         document.getElementById('filepath').value = '';
         document.getElementById('fileInput').value = '';
@@ -143,6 +198,7 @@ async function validerTeleportation() {
         updateFilesDisplay();
         updateExecutionFileDisplay();
         loadHistory();
+        alert('✅ Fichiers envoyés avec succès !');
     }, 500);
 }
 
@@ -157,10 +213,10 @@ async function loadHistory() {
         });
 
         const data = await response.json();
-        console.log("Historique:", data);
+        console.log("📂 Historique:", data);
         displayHistory(data);
     } catch (error) {
-        console.error("Erreur historique:", error);
+        console.error("❌ Erreur historique:", error);
     }
 }
 
@@ -175,21 +231,28 @@ function displayHistory(downloads) {
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
         
-        // TOUS les statuts commencent en ◐ (en attente du code LOCAL)
-        let recu = '◯';
-        let telecharge = '◯';
-        let teleporte = '◯';
-        let execute = '◯';
+        // Affichage des statuts selon la valeur
+        let recu = d.status === 'en_attente' ? '◯' : '✓';
+        let recuClass = d.status === 'en_attente' ? 'pending' : 'success';
+        
+        let telecharge = ['telecharge', 'teleporte', 'execute'].includes(d.status) ? '✓' : '◯';
+        let telechargeClass = telecharge === '✓' ? 'success' : 'pending';
+        
+        let teleporte = ['teleporte', 'execute'].includes(d.status) ? '✓' : '◯';
+        let teleporteClass = teleporte === '✓' ? 'success' : 'pending';
+        
+        let execute = d.status === 'execute' ? '✓' : '◯';
+        let executeClass = execute === '✓' ? 'success' : 'pending';
 
         return `
             <div class="history-item">
                 <div class="folder-section">
                     <div class="folder-icon">📁</div>
                     <div class="status-column">
-                        <div class="status-line pending" title="Code local a reçu l'info">${recu} Code local</div>
-                        <div class="status-line pending" title="Fichier téléchargé">${telecharge} Téléchargé</div>
-                        ${hasDestination ? `<div class="status-line pending" title="Fichier teleporté">${teleporte} Teleporté</div>` : ''}
-                        <div class="status-line pending" title="Code exécuté">${execute} Exécuté</div>
+                        <div class="status-line ${recuClass}">${recu} En attente</div>
+                        <div class="status-line ${telechargeClass}">${telecharge} Téléchargé</div>
+                        ${hasDestination ? `<div class="status-line ${teleporteClass}">${teleporte} Téléporté</div>` : ''}
+                        <div class="status-line ${executeClass}">${execute} Exécuté</div>
                     </div>
                 </div>
                 <div class="file-info">
@@ -204,7 +267,7 @@ function displayHistory(downloads) {
 }
 
 async function deleteFile(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier?')) {
+    if (!confirm('Supprimer ce fichier ?')) {
         return;
     }
 
@@ -220,13 +283,12 @@ async function deleteFile(id) {
         if (response.ok) {
             console.log("✅ Fichier supprimé");
             loadHistory();
-        } else {
-            console.error("❌ Erreur suppression");
         }
     } catch (error) {
-        console.error("Erreur:", error);
+        console.error("❌ Erreur suppression:", error);
     }
 }
 
+// Démarrage
 loadHistory();
 setInterval(loadHistory, 3000);
