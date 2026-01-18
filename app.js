@@ -1,12 +1,12 @@
 // ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6aXd5cWxwY2drcGNncGNxamt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0OTc4MTYsImV4cCI6MjA1MzA3MzgxNn0.qEkgx5kKCJVPMkAakBF3xrqkukOlmMPLhwCBZL_Mhgc";
+const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads";
 const STORAGE_BUCKET = "files"; // Nom du bucket Supabase Storage
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
-console.log("✅ FILEY DÉMARRÉ - VERSION COMPLETE");
+console.log("✅ FILEY DÉMARRÉ - VERSION COMPLETE 2");
 console.log("Table:", TABLE_NAME);
 console.log("Storage:", STORAGE_BUCKET);
 
