@@ -1,6 +1,6 @@
 // ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6aXd5cWxwY2drcGNncGNxamt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0OTc4MTYsImV4cCI6MjA1MzA3MzgxNn0.qEkgx5kKCJVPMkAakBF3xrqkukOlmMPLhwCBZL_Mhgc";
 const TABLE_NAME = "uploads";
 const STORAGE_BUCKET = "files"; // Nom du bucket Supabase Storage
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
@@ -89,7 +89,11 @@ function toggleCheckbox() {
 // ===== UPLOAD FICHIER VERS SUPABASE STORAGE =====
 async function uploadFileToStorage(file) {
     const timestamp = Date.now();
-    const filename = `${timestamp}_${file.name}`;
+    // Nettoyer le nom du fichier (enlever espaces et caractères spéciaux)
+    const cleanName = file.name
+        .replace(/\s+/g, '_')  // Remplacer espaces par _
+        .replace(/[^a-zA-Z0-9._-]/g, '');  // Garder seulement lettres, chiffres, . _ -
+    const filename = `${timestamp}_${cleanName}`;
     
     try {
         const formData = new FormData();
