@@ -1,19 +1,59 @@
 // ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6aXd5cWxwY2drcGNncGNxamt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0OTc4MTYsImV4cCI6MjA1MzA3MzgxNn0.qEkgx5kKCJVPMkAakBF3xrqkukOlmMPLhwCBZL_Mhgc";
+const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads";
-const STORAGE_BUCKET = "files"; // Nom du bucket Supabase Storage
+const STATUS_TABLE = "client_status";
+const STORAGE_BUCKET = "files";
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
+const STATUS_URL = `${SUPABASE_URL}/rest/v1/${STATUS_TABLE}`;
 const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
-console.log("✅ FILEY DÉMARRÉ - VERSION COMPLETE");
-console.log("Table:", TABLE_NAME);
-console.log("Storage:", STORAGE_BUCKET);
+console.log("✅ FILEY DÉMARRÉ - VERSION 2.0");
 
 // ===== VARIABLES =====
 let selectedFiles = [];
 let fileToExecute = null;
 let checkboxChecked = false;
+let folderCheckboxChecked = false;
+let isClientOnline = false;
+
+// ===== VERIFIER STATUT CLIENT =====
+async function checkClientStatus() {
+    try {
+        const response = await fetch(STATUS_URL + '?select=*&limit=1', {
+            headers: {
+                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                "apikey": SUPABASE_KEY
+            }
+        });
+
+        const data = await response.json();
+        const now = Date.now();
+        
+        if (data && data.length > 0) {
+            const lastUpdate = new Date(data[0].last_seen).getTime();
+            // Si dernière mise à jour < 15 secondes = en ligne
+            isClientOnline = (now - lastUpdate) < 15000;
+        } else {
+            isClientOnline = false;
+        }
+
+        const indicator = document.getElementById('statusIndicator');
+        const statusText = indicator.querySelector('.status-text');
+        
+        if (isClientOnline) {
+            indicator.classList.remove('offline');
+            indicator.classList.add('online');
+            statusText.textContent = 'Code local: En ligne';
+        } else {
+            indicator.classList.remove('online');
+            indicator.classList.add('offline');
+            statusText.textContent = 'Code local: Hors ligne';
+        }
+    } catch (error) {
+        console.error("Erreur vérification statut:", error);
+    }
+}
 
 // ===== GESTION FICHIERS À DÉPOSER =====
 document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -67,38 +107,70 @@ function removeExecutionFile() {
     updateExecutionFileDisplay();
 }
 
+// ===== CHECKBOX DOSSIER PERSONNALISE =====
+function toggleFolderCheckbox() {
+    folderCheckboxChecked = !folderCheckboxChecked;
+    const checkbox = document.getElementById('folderCheckbox');
+    const folderName = document.getElementById('folderName');
+    
+    if (folderCheckboxChecked) {
+        checkbox.classList.add('checked');
+        checkbox.textContent = '✓';
+        folderName.disabled = false;
+        folderName.focus();
+    } else {
+        checkbox.classList.remove('checked');
+        checkbox.textContent = '';
+        folderName.disabled = true;
+        folderName.value = '';
+    }
+}
+
 // ===== CHECKBOX CHEMIN =====
 function toggleCheckbox() {
     checkboxChecked = !checkboxChecked;
     const checkbox = document.getElementById('checkbox');
     const filepath = document.getElementById('filepath');
+    const browseBtn = document.getElementById('browseBtn');
     
     if (checkboxChecked) {
         checkbox.classList.add('checked');
         checkbox.textContent = '✓';
         filepath.disabled = false;
+        browseBtn.disabled = false;
         filepath.focus();
     } else {
         checkbox.classList.remove('checked');
         checkbox.textContent = '';
         filepath.disabled = true;
+        browseBtn.disabled = true;
         filepath.value = '';
     }
 }
 
+// ===== PARCOURIR DOSSIER =====
+function browsePath() {
+    const folderPicker = document.getElementById('folderPicker');
+    folderPicker.click();
+}
+
+document.getElementById('folderPicker').addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+        const path = e.target.files[0].webkitRelativePath;
+        const folderPath = path.substring(0, path.lastIndexOf('/'));
+        document.getElementById('filepath').value = folderPath;
+    }
+});
+
 // ===== UPLOAD FICHIER VERS SUPABASE STORAGE =====
 async function uploadFileToStorage(file) {
     const timestamp = Date.now();
-    // Nettoyer le nom du fichier (enlever espaces et caractères spéciaux)
     const cleanName = file.name
-        .replace(/\s+/g, '_')  // Remplacer espaces par _
-        .replace(/[^a-zA-Z0-9._-]/g, '');  // Garder seulement lettres, chiffres, . _ -
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9._-]/g, '');
     const filename = `${timestamp}_${cleanName}`;
     
     try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
         const response = await fetch(`${STORAGE_URL}/${filename}`, {
             method: 'POST',
             headers: {
@@ -135,13 +207,25 @@ async function validerTeleportation() {
         return;
     }
     if (checkboxChecked && !document.getElementById('filepath').value.trim()) {
-        alert('Entrez un chemin');
+        alert('Entrez un chemin de téléportation');
+        return;
+    }
+    if (folderCheckboxChecked && !document.getElementById('folderName').value.trim()) {
+        alert('Entrez un nom de dossier');
         return;
     }
 
-    const filepath = checkboxChecked ? document.getElementById('filepath').value.trim() : '';
+    let destinationPath = '';
+    
+    if (checkboxChecked) {
+        destinationPath = document.getElementById('filepath').value.trim();
+    }
+    
+    if (folderCheckboxChecked) {
+        const folderName = document.getElementById('folderName').value.trim();
+        destinationPath = destinationPath ? `${destinationPath}\\${folderName}` : folderName;
+    }
 
-    // Upload du fichier à exécuter
     console.log("📤 Upload du fichier à exécuter...");
     const executeFileURL = await uploadFileToStorage(fileToExecute);
     if (!executeFileURL) {
@@ -149,7 +233,6 @@ async function validerTeleportation() {
         return;
     }
 
-    // Upload et enregistrement de chaque fichier
     for (let file of selectedFiles) {
         console.log(`📤 Upload de ${file.name}...`);
         const fileURL = await uploadFileToStorage(file);
@@ -164,7 +247,7 @@ async function validerTeleportation() {
             file_url: fileURL,
             file_to_execute: fileToExecute.name,
             execute_file_url: executeFileURL,
-            destination: filepath || null,
+            destination: destinationPath || null,
             status: "en_attente"
         };
 
@@ -192,13 +275,17 @@ async function validerTeleportation() {
         }
     }
 
-    // Réinitialisation
     setTimeout(() => {
         document.getElementById('filepath').value = '';
+        document.getElementById('folderName').value = '';
         document.getElementById('fileInput').value = '';
         document.getElementById('fileToExecuteInput').value = '';
         selectedFiles = [];
         fileToExecute = null;
+        
+        if (checkboxChecked) toggleCheckbox();
+        if (folderCheckboxChecked) toggleFolderCheckbox();
+        
         updateFilesDisplay();
         updateExecutionFileDisplay();
         loadHistory();
@@ -235,7 +322,6 @@ function displayHistory(downloads) {
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
         
-        // Affichage des statuts selon la valeur
         let recu = d.status === 'en_attente' ? '◯' : '✓';
         let recuClass = d.status === 'en_attente' ? 'pending' : 'success';
         
@@ -295,4 +381,6 @@ async function deleteFile(id) {
 
 // Démarrage
 loadHistory();
+checkClientStatus();
 setInterval(loadHistory, 3000);
+setInterval(checkClientStatus, 10000);
