@@ -8,6 +8,12 @@
 </head>
 <body>
     <div class="container">
+        <!-- INDICATEUR DE CONNEXION -->
+        <div id="statusIndicator" class="status-indicator offline">
+            <span class="status-dot"></span>
+            <span class="status-text">Code local: Hors ligne</span>
+        </div>
+        
         <h1>FILEY</h1>
         
         <div class="main-box">
@@ -23,12 +29,25 @@
             
             <!-- CHOISIR FICHIER A EXECUTER -->
             <div class="section-box">
-                <div class="section-title">Choisir le fichier a exécuter</div>
+                <div class="section-title">Choisir le fichier à exécuter</div>
                 <div class="drop-zone" onclick="document.getElementById('fileToExecuteInput').click()">
                     <input type="file" id="fileToExecuteInput">
                     <div class="drop-text">Glisse un fichier ici ou clique</div>
                 </div>
                 <div id="executionFileContainer" class="execution-file-container"></div>
+            </div>
+            
+            <!-- CREER UN DOSSIER PERSONNALISE -->
+            <div class="section-box">
+                <div class="path-section">
+                    <div class="checkbox-group">
+                        <div class="checkbox-custom" id="folderCheckbox" onclick="toggleFolderCheckbox()"></div>
+                        <label class="checkbox-label" onclick="toggleFolderCheckbox()">Créer dans un dossier</label>
+                    </div>
+                    <div class="path-input-container">
+                        <input type="text" class="path-input" id="folderName" placeholder="Nom du dossier" disabled>
+                    </div>
+                </div>
             </div>
             
             <!-- CHEMIN TELEPORTATION -->
@@ -39,7 +58,9 @@
                         <label class="checkbox-label" onclick="toggleCheckbox()">Chemin de téléportation</label>
                     </div>
                     <div class="path-input-container">
-                        <input type="text" class="path-input" id="filepath" placeholder="/" disabled>
+                        <input type="text" class="path-input" id="filepath" placeholder="Exemple: C:\MesFichiers" disabled>
+                        <button class="btn-browse" id="browseBtn" onclick="browsePath()" disabled title="Parcourir">📂</button>
+                        <input type="file" id="folderPicker" webkitdirectory directory style="display: none;">
                         <button class="btn-valider" onclick="validerTeleportation()">Valider</button>
                     </div>
                 </div>
@@ -54,7 +75,6 @@
             </div>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
