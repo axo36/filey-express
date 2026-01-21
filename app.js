@@ -148,22 +148,30 @@ function toggleCheckbox() {
     }
 }
 
-// ===== AIDE PARCOURIR =====
-function showBrowseHelp() {
+// ===== PARCOURIR DOSSIER =====
+function browsePath() {
     alert(
-        'Comment trouver votre chemin :\n\n' +
-        '1. Ouvrez l\'Explorateur Windows\n' +
-        '2. Allez dans le dossier voulu\n' +
-        '3. Cliquez sur la barre d\'adresse en haut\n' +
-        '4. Le chemin complet s\'affiche (ex: C:\\Users\\Nom\\Documents)\n' +
-        '5. Copiez-le (Ctrl+C)\n' +
-        '6. Collez-le dans le champ (Ctrl+V)\n\n' +
-        'Exemples de chemins valides :\n' +
-        '• C:\\MesFichiers\n' +
-        '• C:\\Users\\VotreNom\\Documents\n' +
-        '• D:\\Projets'
+        '📂 COMMENT PARCOURIR :\n\n' +
+        '1. Un fichier "folder-picker.vbs" doit être dans le même dossier que le site\n\n' +
+        '2. Double-cliquez sur "folder-picker.vbs"\n\n' +
+        '3. Sélectionnez votre dossier\n\n' +
+        '4. Le chemin sera copié automatiquement\n\n' +
+        '5. Revenez ici et collez avec Ctrl+V\n\n' +
+        '──────────────────────────\n\n' +
+        'OU tapez directement le chemin :\n' +
+        'Exemple : C:\\MesDossiers'
     );
+    
+    // Focus sur le champ
+    document.getElementById('filepath').focus();
 }
+
+// Détecter le collage automatique
+document.getElementById('filepath').addEventListener('paste', function(e) {
+    setTimeout(() => {
+        console.log('✅ Chemin collé:', e.target.value);
+    }, 100);
+});
 
 // ===== UPLOAD FICHIER VERS SUPABASE STORAGE =====
 async function uploadFileToStorage(file) {
