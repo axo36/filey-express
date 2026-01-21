@@ -8,14 +8,12 @@ if (folderCheckboxChecked && !document.getElementById('folderName').value.trim()
         customFolder = document.getElementById('folderName').value.trim();
     }// ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e"
+const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads";
 const STATUS_TABLE = "client_status";
-const FOLDERS_TABLE = "folders_list";
 const STORAGE_BUCKET = "files";
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 const STATUS_URL = `${SUPABASE_URL}/rest/v1/${STATUS_TABLE}`;
-const FOLDERS_URL = `${SUPABASE_URL}/rest/v1/${FOLDERS_TABLE}`;
 const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
 console.log("✅ FILEY DÉMARRÉ - VERSION 2.0");
