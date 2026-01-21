@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FILEY - Explorateur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #00d4ff;
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+        }
+
+        .explorer-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #00d4ff;
+            border-radius: 15px;
+            background: rgba(0, 212, 255, 0.03);
+            overflow: hidden;
+        }
+
+        .explorer-header {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 15px 20px;
+            border-bottom: 1px solid #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .path-display {
+            flex: 1;
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid #00d4ff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: #00d4ff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: #00d4ff;
+            color: #0a0e27;
+        }
+
+        .explorer-body {
+            padding: 20px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 3px solid #00d4ff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .folder-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .folder-icon {
+            font-size: 2em;
+            min-width: 40px;
+        }
+
+        .folder-info {
+            flex: 1;
+        }
+
+        .folder-name {
+            color: #00d4ff;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .folder-path {
+            color: #00a8cc;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+            margin-top: 5px;
+        }
+
+        .explorer-footer {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 15px 20px;
+            border-top: 1px solid #00d4ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-select {
+            background: #00d4ff;
+            border: none;
+            color: #0a0e27;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn-select:hover {
+            box-shadow: 0 0 20px #00d4ff;
+            transform: scale(1.05);
+        }
+
+        .selected-path {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #00a8cc;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #f59e0b;
+            font-size: 1.2em;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .breadcrumb-item {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .breadcrumb-item:hover {
+            background: rgba(0, 212, 255, 0.3);
+        }
+
+        .breadcrumb-separator {
+            color: #00a8cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="explorer-container">
+        <div class="explorer-header">
+            <button class="btn-back" onclick="goBack()">⬅ Retour</button>
+            <div class="path-display">
+                <div class="breadcrumb" id="breadcrumb"></div>
+            </div>
+        </div>
+        
+        <div class="explorer-body" id="explorerBody">
+            <div class="loading">📂 Chargement de l'explorateur...</div>
+        </div>
+        
+        <div class="explorer-footer">
+            <div class="selected-path" id="selectedPathDisplay">Aucun dossier sélectionné</div>
+            <button class="btn-select" onclick="selectCurrentFolder()">Sélectionner ce dossier</button>
+        </div>
+    </div>
+
+    <script>
+        // Structure de l'arborescence Windows simulée
+        const windowsStructure = {
+            'C:': {
+                type: 'drive',
+                icon: '💾',
+                children: {
+                    'Program Files': {
+                        type: 'folder',
+                        icon: '📁',
+                        children: {}
+                    },
+                    'Program Files (x86)': {
+                        type: 'folder',
+                        icon: '📁',
+                        children: {}
+                    },
+                    'Windows': {
+                        type: 'folder',
+                        icon: '🪟',
+                        children: {}
+                    },
+                    'Users': {
+                        type: 'folder',
+                        icon: '👤',
+                        children: {
+                            'Public': {
+                                type: 'folder',
+                                icon: '🌐',
+                                children: {
+                                    'Documents': { type: 'folder', icon: '📄', children: {} },
+                                    'Downloads': { type: 'folder', icon: '📥', children: {} },
+                                    'Desktop': { type: 'folder', icon: '🖥️', children: {} }
+                                }
+                            }
+                        }
+                    },
+                    'ProgramData': {
+                        type: 'folder',
+                        icon: '📦',
+                        children: {}
+                    },
+                    'Temp': {
+                        type: 'folder',
+                        icon: '🗑️',
+                        children: {}
+                    }
+                }
+            },
+            'D:': {
+                type: 'drive',
+                icon: '💾',
+                children: {}
+            }
+        };
+
+        let currentPath = [];
+        let selectedPath = '';
+
+        function navigateTo(folderName) {
+            currentPath.push(folderName);
+            renderExplorer();
+        }
+
+        function goBack() {
+            if (currentPath.length > 0) {
+                currentPath.pop();
+                renderExplorer();
+            }
+        }
+
+        function goToPath(index) {
+            currentPath = currentPath.slice(0, index + 1);
+            renderExplorer();
+        }
+
+        function getCurrentFolder() {
+            let current = windowsStructure;
+            for (let folder of currentPath) {
+                if (current[folder]) {
+                    current = current[folder].children || {};
+                }
+            }
+            return current;
+        }
+
+        function getFullPath() {
+            if (currentPath.length === 0) return 'Ce PC';
+            return currentPath.join('\\');
+        }
+
+        function renderBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            
+            if (currentPath.length === 0) {
+                breadcrumb.innerHTML = '<div class="breadcrumb-item">💻 Ce PC</div>';
+                return;
+            }
+
+            let html = '<div class="breadcrumb-item" onclick="currentPath = []; renderExplorer()">💻 Ce PC</div>';
+            
+            currentPath.forEach((folder, index) => {
+                html += '<span class="breadcrumb-separator">▸</span>';
+                html += `<div class="breadcrumb-item" onclick="goToPath(${index})">${folder}</div>`;
+            });
+            
+            breadcrumb.innerHTML = html;
+        }
+
+        function renderExplorer() {
+            const body = document.getElementById('explorerBody');
+            const current = getCurrentFolder();
+            
+            renderBreadcrumb();
+            
+            if (Object.keys(current).length === 0) {
+                body.innerHTML = '<div class="empty-state">📭 Ce dossier est vide</div>';
+                return;
+            }
+
+            let html = '';
+            for (let [name, data] of Object.entries(current)) {
+                const fullPath = currentPath.length === 0 ? name : getFullPath() + '\\' + name;
+                html += `
+                    <div class="folder-item" onclick="navigateTo('${name}')">
+                        <div class="folder-icon">${data.icon}</div>
+                        <div class="folder-info">
+                            <div class="folder-name">${name}</div>
+                            <div class="folder-path">${fullPath}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            body.innerHTML = html;
+        }
+
+        function selectCurrentFolder() {
+            let path = getFullPath();
+            
+            if (path === 'Ce PC') {
+                alert('❌ Veuillez sélectionner un dossier spécifique, pas "Ce PC"');
+                return;
+            }
+
+            // Remplacer les slashes par des backslashes pour Windows
+            path = path.replace(/\//g, '\\');
+
+            selectedPath = path;
+            document.getElementById('selectedPathDisplay').textContent = '✅ Sélectionné: ' + selectedPath;
+            
+            console.log('Chemin sélectionné:', selectedPath);
+            
+            // Essayer de remplir le champ dans la page parente
+            try {
+                if (window.opener && !window.opener.closed) {
+                    window.opener.document.getElementById('filepath').value = selectedPath;
+                    alert('✅ Chemin copié dans la page principale!\n\n' + selectedPath);
+                    window.close();
+                } else {
+                    // Copier dans le presse-papier si possible
+                    navigator.clipboard.writeText(selectedPath).then(() => {
+                        alert('✅ Chemin copié dans le presse-papier!\n\n' + selectedPath + '\n\nCollez-le dans le champ avec Ctrl+V');
+                        window.close();
+                    }).catch(() => {
+                        alert('✅ Chemin sélectionné:\n\n' + selectedPath + '\n\nCopiez-le manuellement et collez-le dans le champ.');
+                    });
+                }
+            } catch (e) {
+                alert('✅ Chemin sélectionné:\n\n' + selectedPath + '\n\nCopiez-le et utilisez-le dans votre application.');
+            }
+        }
+
+        // Initialisation
+        renderExplorer();
+    </script>
+</body>
+</html>
