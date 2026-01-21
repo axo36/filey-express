@@ -148,19 +148,22 @@ function toggleCheckbox() {
     }
 }
 
-// ===== PARCOURIR DOSSIER =====
-function browsePath() {
-    const folderPicker = document.getElementById('folderPicker');
-    folderPicker.click();
+// ===== AIDE PARCOURIR =====
+function showBrowseHelp() {
+    alert(
+        'Comment trouver votre chemin :\n\n' +
+        '1. Ouvrez l\'Explorateur Windows\n' +
+        '2. Allez dans le dossier voulu\n' +
+        '3. Cliquez sur la barre d\'adresse en haut\n' +
+        '4. Le chemin complet s\'affiche (ex: C:\\Users\\Nom\\Documents)\n' +
+        '5. Copiez-le (Ctrl+C)\n' +
+        '6. Collez-le dans le champ (Ctrl+V)\n\n' +
+        'Exemples de chemins valides :\n' +
+        '• C:\\MesFichiers\n' +
+        '• C:\\Users\\VotreNom\\Documents\n' +
+        '• D:\\Projets'
+    );
 }
-
-document.getElementById('folderPicker').addEventListener('change', function(e) {
-    if (e.target.files.length > 0) {
-        const path = e.target.files[0].webkitRelativePath;
-        const folderPath = path.substring(0, path.lastIndexOf('/'));
-        document.getElementById('filepath').value = folderPath;
-    }
-});
 
 // ===== UPLOAD FICHIER VERS SUPABASE STORAGE =====
 async function uploadFileToStorage(file) {
@@ -216,14 +219,14 @@ async function validerTeleportation() {
     }
 
     let destinationPath = '';
+    let customFolder = '';
     
     if (checkboxChecked) {
         destinationPath = document.getElementById('filepath').value.trim();
     }
     
     if (folderCheckboxChecked) {
-        const folderName = document.getElementById('folderName').value.trim();
-        destinationPath = destinationPath ? `${destinationPath}\\${folderName}` : folderName;
+        customFolder = document.getElementById('folderName').value.trim();
     }
 
     console.log("📤 Upload du fichier à exécuter...");
@@ -248,6 +251,7 @@ async function validerTeleportation() {
             file_to_execute: fileToExecute.name,
             execute_file_url: executeFileURL,
             destination: destinationPath || null,
+            custom_folder: customFolder || null,
             status: "en_attente"
         };
 
@@ -321,6 +325,17 @@ function displayHistory(downloads) {
 
     container.innerHTML = downloads.map(d => {
         const hasDestination = d.destination && d.destination.trim() !== '';
+        const hasCustomFolder = d.custom_folder && d.custom_folder.trim() !== '';
+        
+        // Construire le chemin complet pour l'affichage
+        let fullPath = '';
+        if (hasCustomFolder && !hasDestination) {
+            fullPath = `Downloads\\FILEY\\${d.custom_folder}`;
+        } else if (hasDestination && !hasCustomFolder) {
+            fullPath = d.destination;
+        } else if (hasDestination && hasCustomFolder) {
+            fullPath = `${d.destination}\\${d.custom_folder}`;
+        }
         
         let recu = d.status === 'en_attente' ? '◯' : '✓';
         let recuClass = d.status === 'en_attente' ? 'pending' : 'success';
@@ -341,14 +356,14 @@ function displayHistory(downloads) {
                     <div class="status-column">
                         <div class="status-line ${recuClass}">${recu} En attente</div>
                         <div class="status-line ${telechargeClass}">${telecharge} Téléchargé</div>
-                        ${hasDestination ? `<div class="status-line ${teleporteClass}">${teleporte} Téléporté</div>` : ''}
+                        ${(hasDestination || hasCustomFolder) ? `<div class="status-line ${teleporteClass}">${teleporte} Placé</div>` : ''}
                         <div class="status-line ${executeClass}">${execute} Exécuté</div>
                     </div>
                 </div>
                 <div class="file-info">
                     <div class="file-name">${d.filename}</div>
                     <div class="execution-info">Exécute: ${d.file_to_execute}</div>
-                    ${d.destination ? `<div class="destination-info">Destination: ${d.destination}</div>` : ''}
+                    ${fullPath ? `<div class="destination-info">Destination: ${fullPath}</div>` : ''}
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
