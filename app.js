@@ -1,12 +1,4 @@
-if (folderCheckboxChecked && !document.getElementById('folderName').value.trim()) {
-        alert('Entrez un nom de dossier');
-        return;
-    }
-
-    let customFolder = '';
-    if (folderCheckboxChecked) {
-        customFolder = document.getElementById('folderName').value.trim();
-    }// ===== CONFIG SUPABASE =====
+// ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
 const TABLE_NAME = "uploads";
@@ -16,7 +8,7 @@ const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 const STATUS_URL = `${SUPABASE_URL}/rest/v1/${STATUS_TABLE}`;
 const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
-console.log("✅ FILEY DÉMARRÉ - VERSION 2.0");
+console.log("✅ FILEY DÉMARRÉ - VERSION 3.0");
 
 // ===== VARIABLES =====
 let selectedFiles = [];
@@ -40,7 +32,6 @@ async function checkClientStatus() {
         
         if (data && data.length > 0) {
             const lastUpdate = new Date(data[0].last_seen).getTime();
-            // Si dernière mise à jour < 15 secondes = en ligne
             isClientOnline = (now - lastUpdate) < 15000;
         } else {
             isClientOnline = false;
@@ -157,7 +148,6 @@ function toggleCheckbox() {
 
 // ===== OUVRIR EXPLORATEUR =====
 function openExplorer() {
-    // Ouvrir l'explorateur dans une nouvelle fenêtre
     window.open('explorer.html', 'FileyExplorer', 'width=900,height=700,resizable=yes,scrollbars=yes');
 }
 
@@ -205,25 +195,26 @@ async function validerTeleportation() {
         alert('Sélectionnez un fichier à exécuter');
         return;
     }
+    if (checkboxChecked && !document.getElementById('filepath').value.trim()) {
+        alert('Sélectionnez un chemin de téléportation');
+        return;
+    }
+    if (folderCheckboxChecked && !document.getElementById('folderName').value.trim()) {
+        alert('Entrez un nom de dossier');
+        return;
+    }
+
+    const filepath = checkboxChecked ? document.getElementById('filepath').value.trim() : '';
     
     let destinationPath = '';
+    let customFolder = '';
     
-    if (checkboxChecked) {
-        if (useCustomPath) {
-            // Chemin personnalisé tapé
-            destinationPath = document.getElementById('filepath').value.trim();
-            if (!destinationPath) {
-                alert('Entrez un chemin de téléportation personnalisé');
-                return;
-            }
-        } else {
-            // Dossier sélectionné dans la liste
-            destinationPath = document.getElementById('folderSelect').value;
-            if (!destinationPath) {
-                alert('Sélectionnez un dossier dans la liste ou utilisez un chemin personnalisé');
-                return;
-            }
-        }
+    if (filepath) {
+        destinationPath = filepath;
+    }
+    
+    if (folderCheckboxChecked) {
+        customFolder = document.getElementById('folderName').value.trim();
     }
 
     console.log("📤 Upload du fichier à exécuter...");
@@ -324,7 +315,6 @@ function displayHistory(downloads) {
         const hasDestination = d.destination && d.destination.trim() !== '';
         const hasCustomFolder = d.custom_folder && d.custom_folder.trim() !== '';
         
-        // Construire le chemin complet pour l'affichage
         let fullPath = '';
         if (hasCustomFolder && !hasDestination) {
             fullPath = `Downloads\\FILEY\\${d.custom_folder}`;
