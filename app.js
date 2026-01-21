@@ -1,11 +1,21 @@
-// ===== CONFIG SUPABASE =====
+if (folderCheckboxChecked && !document.getElementById('folderName').value.trim()) {
+        alert('Entrez un nom de dossier');
+        return;
+    }
+
+    let customFolder = '';
+    if (folderCheckboxChecked) {
+        customFolder = document.getElementById('folderName').value.trim();
+    }// ===== CONFIG SUPABASE =====
 const SUPABASE_URL = "https://aziwyqlpcgkpcgpcqjkv.supabase.co";
-const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e";
+const SUPABASE_KEY = "sb_publishable_wRtZ50ROcD0VPxjZBO3sbg_WvDTNs_e"
 const TABLE_NAME = "uploads";
 const STATUS_TABLE = "client_status";
+const FOLDERS_TABLE = "folders_list";
 const STORAGE_BUCKET = "files";
 const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 const STATUS_URL = `${SUPABASE_URL}/rest/v1/${STATUS_TABLE}`;
+const FOLDERS_URL = `${SUPABASE_URL}/rest/v1/${FOLDERS_TABLE}`;
 const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
 console.log("✅ FILEY DÉMARRÉ - VERSION 2.0");
@@ -138,7 +148,6 @@ function toggleCheckbox() {
         checkbox.textContent = '✓';
         filepath.disabled = false;
         browseBtn.disabled = false;
-        filepath.focus();
     } else {
         checkbox.classList.remove('checked');
         checkbox.textContent = '';
@@ -148,30 +157,11 @@ function toggleCheckbox() {
     }
 }
 
-// ===== PARCOURIR DOSSIER =====
-function browsePath() {
-    alert(
-        '📂 COMMENT PARCOURIR :\n\n' +
-        '1. Un fichier "folder-picker.vbs" doit être dans le même dossier que le site\n\n' +
-        '2. Double-cliquez sur "folder-picker.vbs"\n\n' +
-        '3. Sélectionnez votre dossier\n\n' +
-        '4. Le chemin sera copié automatiquement\n\n' +
-        '5. Revenez ici et collez avec Ctrl+V\n\n' +
-        '──────────────────────────\n\n' +
-        'OU tapez directement le chemin :\n' +
-        'Exemple : C:\\MesDossiers'
-    );
-    
-    // Focus sur le champ
-    document.getElementById('filepath').focus();
+// ===== OUVRIR EXPLORATEUR =====
+function openExplorer() {
+    // Ouvrir l'explorateur dans une nouvelle fenêtre
+    window.open('explorer.html', 'FileyExplorer', 'width=900,height=700,resizable=yes,scrollbars=yes');
 }
-
-// Détecter le collage automatique
-document.getElementById('filepath').addEventListener('paste', function(e) {
-    setTimeout(() => {
-        console.log('✅ Chemin collé:', e.target.value);
-    }, 100);
-});
 
 // ===== UPLOAD FICHIER VERS SUPABASE STORAGE =====
 async function uploadFileToStorage(file) {
@@ -217,24 +207,25 @@ async function validerTeleportation() {
         alert('Sélectionnez un fichier à exécuter');
         return;
     }
-    if (checkboxChecked && !document.getElementById('filepath').value.trim()) {
-        alert('Entrez un chemin de téléportation');
-        return;
-    }
-    if (folderCheckboxChecked && !document.getElementById('folderName').value.trim()) {
-        alert('Entrez un nom de dossier');
-        return;
-    }
-
+    
     let destinationPath = '';
-    let customFolder = '';
     
     if (checkboxChecked) {
-        destinationPath = document.getElementById('filepath').value.trim();
-    }
-    
-    if (folderCheckboxChecked) {
-        customFolder = document.getElementById('folderName').value.trim();
+        if (useCustomPath) {
+            // Chemin personnalisé tapé
+            destinationPath = document.getElementById('filepath').value.trim();
+            if (!destinationPath) {
+                alert('Entrez un chemin de téléportation personnalisé');
+                return;
+            }
+        } else {
+            // Dossier sélectionné dans la liste
+            destinationPath = document.getElementById('folderSelect').value;
+            if (!destinationPath) {
+                alert('Sélectionnez un dossier dans la liste ou utilisez un chemin personnalisé');
+                return;
+            }
+        }
     }
 
     console.log("📤 Upload du fichier à exécuter...");
