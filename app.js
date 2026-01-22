@@ -342,22 +342,33 @@ function displayHistory(downloads) {
         
         let execute = d.status === 'execute' ? '✓' : '◯';
         let executeClass = execute === '✓' ? 'success' : 'pending';
+        
+        // Afficher l'erreur si elle existe
+        let errorDisplay = '';
+        if (d.error_message) {
+            errorDisplay = `
+                <div class="error-message">
+                    <strong>❌ Erreur :</strong> ${d.error_message}
+                </div>
+            `;
+        }
 
         return `
             <div class="history-item">
                 <div class="folder-section">
                     <div class="folder-icon">📁</div>
                     <div class="status-column">
-                        <div class="status-line ${recuClass}">${recu} En attente</div>
-                        <div class="status-line ${telechargeClass}">${telecharge} Téléchargé</div>
-                        ${(hasDestination || hasCustomFolder) ? `<div class="status-line ${teleporteClass}">${teleporte} Placé</div>` : ''}
-                        <div class="status-line ${executeClass}">${execute} Exécuté</div>
+                        <div class="status-line ${statusEnAttente}">${iconEnAttente} En attente</div>
+                        <div class="status-line ${statusTelecharge}">${iconTelecharge} Téléchargé</div>
+                        ${(hasDestination || hasCustomFolder) ? `<div class="status-line ${statusTeleporte}">${iconTeleporte} Placé</div>` : ''}
+                        <div class="status-line ${statusExecute}">${iconExecute} Exécuté</div>
                     </div>
                 </div>
                 <div class="file-info">
                     <div class="file-name">${d.filename}</div>
                     <div class="execution-info">Exécute: ${d.file_to_execute}</div>
                     <div class="destination-info">📂 ${fullPath}</div>
+                    ${errorDisplay}
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
