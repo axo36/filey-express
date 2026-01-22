@@ -8,7 +8,7 @@ const API_URL = `${SUPABASE_URL}/rest/v1/${TABLE_NAME}`;
 const STATUS_URL = `${SUPABASE_URL}/rest/v1/${STATUS_TABLE}`;
 const STORAGE_URL = `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}`;
 
-console.log("✅ FILEY DÉMARRÉ - VERSION 3.0");
+console.log("✅ FILEY DÉMARRÉ - VERSION 2.0");
 
 // ===== VARIABLES =====
 let selectedFiles = [];
@@ -315,13 +315,20 @@ function displayHistory(downloads) {
         const hasDestination = d.destination && d.destination.trim() !== '';
         const hasCustomFolder = d.custom_folder && d.custom_folder.trim() !== '';
         
+        // Construire le chemin complet pour l'affichage
         let fullPath = '';
         if (hasCustomFolder && !hasDestination) {
-            fullPath = `Downloads\\FILEY\\${d.custom_folder}`;
+            // SEULEMENT dossier personnalisé
+            fullPath = d.custom_folder;
         } else if (hasDestination && !hasCustomFolder) {
+            // SEULEMENT téléportation
             fullPath = d.destination;
         } else if (hasDestination && hasCustomFolder) {
+            // Les DEUX
             fullPath = `${d.destination}\\${d.custom_folder}`;
+        } else {
+            // Rien = Downloads\FILEY par défaut
+            fullPath = 'Downloads\\FILEY';
         }
         
         let recu = d.status === 'en_attente' ? '◯' : '✓';
@@ -350,7 +357,7 @@ function displayHistory(downloads) {
                 <div class="file-info">
                     <div class="file-name">${d.filename}</div>
                     <div class="execution-info">Exécute: ${d.file_to_execute}</div>
-                    ${fullPath ? `<div class="destination-info">Destination: ${fullPath}</div>` : ''}
+                    <div class="destination-info">📂 ${fullPath}</div>
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
