@@ -311,46 +311,67 @@ function displayHistory(downloads) {
         return;
     }
 
-    container.innerHTML = downloads.map(d => {
+    const items = downloads.map(d => {
+        if (!d) return '';
+        
         const hasDestination = d.destination && d.destination.trim() !== '';
         const hasCustomFolder = d.custom_folder && d.custom_folder.trim() !== '';
         
-        // Construire le chemin complet pour l'affichage
         let fullPath = '';
         if (hasCustomFolder && !hasDestination) {
-            // SEULEMENT dossier personnalisé
             fullPath = d.custom_folder;
         } else if (hasDestination && !hasCustomFolder) {
-            // SEULEMENT téléportation
             fullPath = d.destination;
         } else if (hasDestination && hasCustomFolder) {
-            // Les DEUX
             fullPath = `${d.destination}\\${d.custom_folder}`;
         } else {
-            // Rien = Downloads\FILEY par défaut
             fullPath = 'Downloads\\FILEY';
         }
         
-        let recu = d.status === 'en_attente' ? '◯' : '✓';
-        let recuClass = d.status === 'en_attente' ? 'pending' : 'success';
+        const status = d.status || 'en_attente';
+        const hasError = d.error_message && d.error_message.trim() !== '';
         
-        let telecharge = ['telecharge', 'teleporte', 'execute'].includes(d.status) ? '✓' : '◯';
-        let telechargeClass = telecharge === '✓' ? 'success' : 'pending';
+        let statusEnAttente = 'pending', iconEnAttente = '○';
+        let statusTelecharge = 'pending', iconTelecharge = '○';
+        let statusTeleporte = 'pending', iconTeleporte = '○';
+        let statusExecute = 'pending', iconExecute = '○';
         
-        let teleporte = ['teleporte', 'execute'].includes(d.status) ? '✓' : '◯';
-        let teleporteClass = teleporte === '✓' ? 'success' : 'pending';
+        if (hasError) {
+            if (status === 'en_attente') {
+                statusEnAttente = 'error'; iconEnAttente = '✕';
+            } else if (status === 'telecharge') {
+                statusEnAttente = 'success'; iconEnAttente = '✓';
+                statusTelecharge = 'error'; iconTelecharge = '✕';
+            } else if (status === 'teleporte') {
+                statusEnAttente = 'success'; iconEnAttente = '✓';
+                statusTelecharge = 'success'; iconTelecharge = '✓';
+                statusTeleporte = 'error'; iconTeleporte = '✕';
+            } else if (status === 'execute') {
+                statusEnAttente = 'success'; iconEnAttente = '✓';
+                statusTelecharge = 'success'; iconTelecharge = '✓';
+                if (hasDestination || hasCustomFolder) {
+                    statusTeleporte = 'success'; iconTeleporte = '✓';
+                }
+                statusExecute = 'error'; iconExecute = '✕';
+            }
+        } else {
+            if (status !== 'en_attente') {
+                statusEnAttente = 'success'; iconEnAttente = '✓';
+            }
+            if (['telecharge', 'teleporte', 'execute'].includes(status)) {
+                statusTelecharge = 'success'; iconTelecharge = '✓';
+            }
+            if (['teleporte', 'execute'].includes(status)) {
+                statusTeleporte = 'success'; iconTeleporte = '✓';
+            }
+            if (status === 'execute') {
+                statusExecute = 'success'; iconExecute = '✓';
+            }
+        }
         
-        let execute = d.status === 'execute' ? '✓' : '◯';
-        let executeClass = execute === '✓' ? 'success' : 'pending';
-        
-        // Afficher l'erreur si elle existe
         let errorDisplay = '';
-        if (d.error_message) {
-            errorDisplay = `
-                <div class="error-message">
-                    <strong>❌ Erreur :</strong> ${d.error_message}
-                </div>
-            `;
+        if (hasError) {
+            errorDisplay = `<div class="error-message"><strong>❌ Erreur :</strong> ${d.error_message}</div>`;
         }
 
         return `
@@ -365,21 +386,21 @@ function displayHistory(downloads) {
                     </div>
                 </div>
                 <div class="file-info">
-                    <div class="file-name">${d.filename}</div>
-                    <div class="execution-info">Exécute: ${d.file_to_execute}</div>
+                    <div class="file-name">${d.filename || 'Fichier sans nom'}</div>
+                    <div class="execution-info">Exécute: ${d.file_to_execute || 'N/A'}</div>
                     <div class="destination-info">📂 ${fullPath}</div>
                     ${errorDisplay}
                 </div>
                 <button class="btn-delete-file" onclick="deleteFile(${d.id})">✕</button>
             </div>
         `;
-    }).join('');
+    });
+    
+    container.innerHTML = items.filter(Boolean).join('');
 }
 
 async function deleteFile(id) {
-    if (!confirm('Supprimer ce fichier ?')) {
-        return;
-    }
+    if (!confirm('Supprimer ce fichier ?')) return;
 
     try {
         const response = await fetch(API_URL + '?id=eq.' + id, {
